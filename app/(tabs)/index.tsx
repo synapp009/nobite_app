@@ -123,355 +123,363 @@ export default function LogScreen() {
     }
   };
 
-  return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View style={styles.container}>
-        {/* 0. Timer / Status UI - Only show on main screen */}
-        {!intervention && !showTriggers && !pendingReplacement && !showBatchSetup && !showSuccess && (
-          isObservationPhase ? (
-            <View style={styles.timerBadge}>
-              <Text style={styles.timerText}>
-                ⏱️ Noch <Text style={{ fontWeight: 'bold' }}>{daysRemaining} Tage</Text> Beobachtungsphase
-              </Text>
+  const content = (
+    <View style={styles.container}>
+      {/* 0. Timer / Status UI - Only show on main screen */}
+      {!intervention && !showTriggers && !pendingReplacement && !showBatchSetup && !showSuccess && (
+        isObservationPhase ? (
+          <View style={styles.timerBadge}>
+            <Text style={styles.timerText}>
+              ⏱️ Noch <Text style={{ fontWeight: 'bold' }}>{daysRemaining} Tage</Text> Beobachtungsphase
+            </Text>
+            <TouchableOpacity
+              onPress={() => debugSetFirstLaunch(Date.now() - 8 * 24 * 60 * 60 * 1000)}
+              style={{ marginTop: 5, padding: 5 }}
+            >
+              <Text style={{ fontSize: 10, color: '#a4b0be', textDecorationLine: 'underline' }}>Debug: Phase überspringen</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={[styles.timerBadge, { backgroundColor: '#e8f8f0', borderColor: '#20bf6b', borderWidth: 1 }]}>
+            <Text style={[styles.timerText, { color: '#20bf6b', fontWeight: 'bold' }]}>
+              🚀 Interventionsphase aktiv (Tag {daysSinceLaunch - 6})
+            </Text>
+          </View>
+        ))}
+
+      {/* 0.5 Batch Setup UI (Global Popup) */}
+      {showBatchSetup && (
+        <View style={[styles.content, styles.batchOverlay]}>
+          <View style={styles.batchCard}>
+            <Text style={styles.modalTitle}>Setze deine Strategien</Text>
+            <Text style={styles.batchSubtitle}>
+              Die Beobachtung ist vorbei! Lege für jedes Muster eine Ersatzhandlung fest.
+              ({triggersToFix.length} verbleibend)
+            </Text>
+
+            <View style={styles.batchItem}>
+              <Text style={styles.batchTriggerLabel}>Wenn ich <Text style={{ fontWeight: 'bold' }}>{currentBatchTrigger}</Text> fühle...</Text>
+              <TextInput
+                style={styles.customInput}
+                placeholder="Meine Ersatzhandlung..."
+                value={batchInput}
+                onChangeText={setBatchInput}
+                autoFocus
+              />
               <TouchableOpacity
-                onPress={() => debugSetFirstLaunch(Date.now() - 8 * 24 * 60 * 60 * 1000)}
-                style={{ marginTop: 5, padding: 5 }}
+                style={[styles.actionButton, styles.actionButtonSuccess, { marginTop: 15 }]}
+                onPress={handleSaveBatchItem}
               >
-                <Text style={{ fontSize: 10, color: '#a4b0be', textDecorationLine: 'underline' }}>Debug: Phase überspringen</Text>
+                <Text style={styles.actionButtonText}>Speichern & Weiter</Text>
               </TouchableOpacity>
             </View>
-          ) : (
-            <View style={[styles.timerBadge, { backgroundColor: '#e8f8f0', borderColor: '#20bf6b', borderWidth: 1 }]}>
-              <Text style={[styles.timerText, { color: '#20bf6b', fontWeight: 'bold' }]}>
-                🚀 Interventionsphase aktiv (Tag {daysSinceLaunch - 6})
-              </Text>
-            </View>
-          ))}
+          </View>
+        </View>
+      )}
+      {/* 1. Intervention UI */}
+      {!!intervention && (
+        <View style={[styles.content, { padding: 20 }]}>
+          <Text style={styles.interventionTitle}>Statt Nägelkauen ({intervention.trigger}):</Text>
+          <Text style={styles.interventionAction}>👉 {intervention.action}</Text>
 
-        {/* 0.5 Batch Setup UI (Global Popup) */}
-        {showBatchSetup && (
-          <View style={[styles.content, styles.batchOverlay]}>
-            <View style={styles.batchCard}>
-              <Text style={styles.modalTitle}>Setze deine Strategien</Text>
-              <Text style={styles.batchSubtitle}>
-                Die Beobachtung ist vorbei! Lege für jedes Muster eine Ersatzhandlung fest.
-                ({triggersToFix.length} verbleibend)
-              </Text>
+          <View style={styles.interventionActions}>
+            <Pressable
+              style={[styles.actionButton, styles.actionButtonSuccess, { flex: 1 }]}
+              onPress={handleInterventionDone}
+            >
+              <Check color="white" size={24} />
+              <Text style={styles.actionButtonText}>Gemacht</Text>
+            </Pressable>
 
-              <View style={styles.batchItem}>
-                <Text style={styles.batchTriggerLabel}>Wenn ich <Text style={{ fontWeight: 'bold' }}>{currentBatchTrigger}</Text> fühle...</Text>
+            <Pressable
+              style={[styles.actionButton, styles.actionButtonError, { flex: 1 }]}
+              onPress={handleInterventionIgnored}
+            >
+              <X color="white" size={24} />
+              <Text style={styles.actionButtonText}>Ignoriert</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
+
+      {/* 1.5 Forced Replacement UI */}
+      {!!pendingReplacement && (
+        <View style={[styles.content, { padding: 20 }]}>
+          <Text style={styles.modalTitle}>Ausgleichshandlung festlegen</Text>
+          <Text style={{ textAlign: 'center', marginBottom: 20, color: '#636e72' }}>
+            Was möchtest du stattdessen tun, wenn du <Text style={{ fontWeight: 'bold' }}>{pendingReplacement.trigger}</Text> spürst?
+          </Text>
+
+          <TextInput
+            style={styles.customInput}
+            placeholder="z.B. Faust ballen, tief atmen..."
+            autoFocus
+            onSubmitEditing={(e) => {
+              if (e.nativeEvent.text.trim()) {
+                handleSaveForcedReplacement(e.nativeEvent.text.trim());
+              }
+            }}
+          />
+
+          <Text style={{ marginTop: 10, fontSize: 12, color: '#a4b0be', textAlign: 'center' }}>
+            Du musst eine Handlung festlegen, um fortzufahren.
+          </Text>
+        </View>
+      )}
+
+      {/* 2. Trigger Selection UI */}
+      {!intervention && showTriggers && (
+        <View style={[styles.content, { padding: 20, justifyContent: 'center' }]}>
+          <Text style={styles.modalTitle}>Warum?</Text>
+          <View style={{ width: '100%', maxWidth: 400 }}>
+            {!isCustomTrigger ? (
+              <>
+                {allTriggers.map(t => (
+                  <Pressable
+                    key={t}
+                    style={({ pressed }) => [styles.triggerButton, pressed && { opacity: 0.8 }]}
+                    onPress={() => handleTriggerSelect(t)}
+                  >
+                    <Text style={styles.triggerText}>{t}</Text>
+                  </Pressable>
+                ))}
+
+                <Pressable
+                  style={({ pressed }) => [styles.triggerButton, { backgroundColor: '#eccc68' }, pressed && { opacity: 0.8 }]}
+                  onPress={() => setIsCustomTrigger(true)}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Plus color="#2d3436" size={20} />
+                    <Text style={[styles.triggerText, { color: '#2d3436', fontWeight: 'bold' }]}>Eigenen Grund eingeben</Text>
+                  </View>
+                </Pressable>
+
+                <Pressable
+                  style={({ pressed }) => [styles.triggerButton, styles.triggerButtonCancel, pressed && { opacity: 0.8 }]}
+                  onPress={() => setShowTriggers(false)}
+                >
+                  <Text style={styles.triggerTextCancel}>Abbrechen</Text>
+                </Pressable>
+              </>
+            ) : (
+              <View>
                 <TextInput
                   style={styles.customInput}
-                  placeholder="Meine Ersatzhandlung..."
-                  value={batchInput}
-                  onChangeText={setBatchInput}
+                  placeholder="Dein eigener Grund..."
+                  value={customTriggerText}
+                  onChangeText={setCustomTriggerText}
                   autoFocus
+                  onSubmitEditing={() => {
+                    if (customTriggerText.trim()) {
+                      handleTriggerSelect(customTriggerText.trim());
+                      setCustomTriggerText('');
+                      setIsCustomTrigger(false);
+                    }
+                  }}
                 />
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.actionButtonSuccess, { marginTop: 15 }]}
-                  onPress={handleSaveBatchItem}
-                >
-                  <Text style={styles.actionButtonText}>Speichern & Weiter</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        )}
-        {/* 1. Intervention UI */}
-        {!!intervention && (
-          <View style={[styles.content, { padding: 20 }]}>
-            <Text style={styles.interventionTitle}>Statt Nägelkauen ({intervention.trigger}):</Text>
-            <Text style={styles.interventionAction}>👉 {intervention.action}</Text>
 
-            <View style={styles.interventionActions}>
-              <Pressable
-                style={[styles.actionButton, styles.actionButtonSuccess, { flex: 1 }]}
-                onPress={handleInterventionDone}
-              >
-                <Check color="white" size={24} />
-                <Text style={styles.actionButtonText}>Gemacht</Text>
-              </Pressable>
-
-              <Pressable
-                style={[styles.actionButton, styles.actionButtonError, { flex: 1 }]}
-                onPress={handleInterventionIgnored}
-              >
-                <X color="white" size={24} />
-                <Text style={styles.actionButtonText}>Ignoriert</Text>
-              </Pressable>
-            </View>
-          </View>
-        )}
-
-        {/* 1.5 Forced Replacement UI */}
-        {!!pendingReplacement && (
-          <View style={[styles.content, { padding: 20 }]}>
-            <Text style={styles.modalTitle}>Ausgleichshandlung festlegen</Text>
-            <Text style={{ textAlign: 'center', marginBottom: 20, color: '#636e72' }}>
-              Was möchtest du stattdessen tun, wenn du <Text style={{ fontWeight: 'bold' }}>{pendingReplacement.trigger}</Text> spürst?
-            </Text>
-
-            <TextInput
-              style={styles.customInput}
-              placeholder="z.B. Faust ballen, tief atmen..."
-              autoFocus
-              onSubmitEditing={(e) => {
-                if (e.nativeEvent.text.trim()) {
-                  handleSaveForcedReplacement(e.nativeEvent.text.trim());
-                }
-              }}
-            />
-
-            <Text style={{ marginTop: 10, fontSize: 12, color: '#a4b0be', textAlign: 'center' }}>
-              Du musst eine Handlung festlegen, um fortzufahren.
-            </Text>
-          </View>
-        )}
-
-        {/* 2. Trigger Selection UI */}
-        {!intervention && showTriggers && (
-          <View style={[styles.content, { padding: 20, justifyContent: 'center' }]}>
-            <Text style={styles.modalTitle}>Warum?</Text>
-            <View style={{ width: '100%', maxWidth: 400 }}>
-              {!isCustomTrigger ? (
-                <>
-                  {allTriggers.map(t => (
-                    <Pressable
-                      key={t}
-                      style={({ pressed }) => [styles.triggerButton, pressed && { opacity: 0.8 }]}
-                      onPress={() => handleTriggerSelect(t)}
-                    >
-                      <Text style={styles.triggerText}>{t}</Text>
-                    </Pressable>
-                  ))}
-
+                <View style={{ flexDirection: 'row', gap: 10, marginTop: 15 }}>
                   <Pressable
-                    style={({ pressed }) => [styles.triggerButton, { backgroundColor: '#eccc68' }, pressed && { opacity: 0.8 }]}
-                    onPress={() => setIsCustomTrigger(true)}
-                  >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                      <Plus color="#2d3436" size={20} />
-                      <Text style={[styles.triggerText, { color: '#2d3436', fontWeight: 'bold' }]}>Eigenen Grund eingeben</Text>
-                    </View>
-                  </Pressable>
-
-                  <Pressable
-                    style={({ pressed }) => [styles.triggerButton, styles.triggerButtonCancel, pressed && { opacity: 0.8 }]}
-                    onPress={() => setShowTriggers(false)}
-                  >
-                    <Text style={styles.triggerTextCancel}>Abbrechen</Text>
-                  </Pressable>
-                </>
-              ) : (
-                <View>
-                  <TextInput
-                    style={styles.customInput}
-                    placeholder="Dein eigener Grund..."
-                    value={customTriggerText}
-                    onChangeText={setCustomTriggerText}
-                    autoFocus
-                    onSubmitEditing={() => {
+                    style={({ pressed }) => [styles.actionButton, styles.actionButtonSuccess, { flex: 1 }, pressed && { opacity: 0.8 }]}
+                    onPress={() => {
                       if (customTriggerText.trim()) {
                         handleTriggerSelect(customTriggerText.trim());
                         setCustomTriggerText('');
                         setIsCustomTrigger(false);
                       }
                     }}
-                  />
+                  >
+                    <Text style={styles.actionButtonText}>Speichern</Text>
+                  </Pressable>
 
-                  <View style={{ flexDirection: 'row', gap: 10, marginTop: 15 }}>
-                    <Pressable
-                      style={({ pressed }) => [styles.actionButton, styles.actionButtonSuccess, { flex: 1 }, pressed && { opacity: 0.8 }]}
-                      onPress={() => {
-                        if (customTriggerText.trim()) {
-                          handleTriggerSelect(customTriggerText.trim());
-                          setCustomTriggerText('');
-                          setIsCustomTrigger(false);
-                        }
-                      }}
-                    >
-                      <Text style={styles.actionButtonText}>Speichern</Text>
-                    </Pressable>
-
-                    <Pressable
-                      style={({ pressed }) => [styles.actionButton, { backgroundColor: '#a4b0be', flex: 1 }, pressed && { opacity: 0.8 }]}
-                      onPress={() => {
-                        setIsCustomTrigger(false);
-                        setCustomTriggerText('');
-                      }}
-                    >
-                      <Text style={styles.actionButtonText}>Zurück</Text>
-                    </Pressable>
-                  </View>
+                  <Pressable
+                    style={({ pressed }) => [styles.actionButton, { backgroundColor: '#a4b0be', flex: 1 }, pressed && { opacity: 0.8 }]}
+                    onPress={() => {
+                      setIsCustomTrigger(false);
+                      setCustomTriggerText('');
+                    }}
+                  >
+                    <Text style={styles.actionButtonText}>Zurück</Text>
+                  </Pressable>
                 </View>
-              )}
-            </View>
-          </View>
-        )}
-
-        {/* 3. Main Button UI */}
-        {!intervention && !showTriggers && !showSuccess && (
-          <View style={[styles.content, { justifyContent: 'flex-end', paddingBottom: 0 }]}>
-            {Platform.OS === 'web' ? (
-              <div style={{
-                width: '300px',
-                height: '420px',
-                backgroundColor: '#d8a48f',
-                borderRadius: '150px 150px 0 0',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                paddingTop: '30px',
-                boxShadow: 'inset 0 0 40px rgba(0,0,0,0.1), 0 20px 40px rgba(0,0,0,0.15)',
-                position: 'relative'
-              }}>
-                {/* Finger crease */}
-                <div style={{
-                  position: 'absolute',
-                  bottom: '100px',
-                  width: '180px',
-                  height: '2px',
-                  backgroundColor: 'rgba(0,0,0,0.1)',
-                  borderRadius: '50%',
-                  boxShadow: '0 5px 10px rgba(0,0,0,0.05)'
-                }} />
-
-                <button
-                  onClick={() => setShowTriggers(true)}
-                  style={{
-                    backgroundColor: '#ffffff', // The white of the distal edge
-                    width: '210px',
-                    height: '295px',
-                    borderTopLeftRadius: '105px',
-                    borderTopRightRadius: '105px',
-                    borderBottomLeftRadius: '90px',
-                    borderBottomRightRadius: '90px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    transition: 'transform 0.2s',
-                    outline: 'none',
-                    boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
-                    padding: '0'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                  {/* Nail Body (Pink) - layered on top to create concave white tip */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '25px', // Distance of the white tip
-                    left: '0',
-                    right: '0',
-                    bottom: '0',
-                    backgroundColor: '#f8e3df',
-                    borderTopLeftRadius: '90px',
-                    borderTopRightRadius: '90px',
-                    borderBottomLeftRadius: '85px',
-                    borderBottomRightRadius: '85px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                    {/* Lunula */}
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '-15px',
-                      width: '100px',
-                      height: '50px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                      borderRadius: '50px 50px 0 0',
-                      filter: 'blur(1px)'
-                    }} />
-
-                    {/* Subtle vertical nail lines */}
-                    <div style={{
-                      position: 'absolute',
-                      width: '100%',
-                      height: '100%',
-                      background: 'repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,0,0,0.02) 11px)',
-                      pointerEvents: 'none'
-                    }} />
-
-                    <div style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      zIndex: 1,
-                      padding: '20px',
-                      color: '#2d3436',
-                      textShadow: '0 1px 2px rgba(255,255,255,0.8)'
-                    }}>
-                      <span style={{
-                        fontSize: '14px',
-                        textTransform: 'uppercase',
-                        letterSpacing: '2px',
-                        fontWeight: '600',
-                        marginBottom: '4px',
-                        opacity: 0.7
-                      }}>Ich kaue</span>
-                      <span style={{
-                        fontSize: '28px',
-                        fontWeight: '900',
-                        textAlign: 'center',
-                        lineHeight: '1.1'
-                      }}>GERADE<br />NÄGEL</span>
-                    </div>
-                  </div>
-                </button>
-
-                {/* Cuticle / Eponychium */}
-                <div style={{
-                  position: 'absolute',
-                  bottom: '110px',
-                  width: '210px',
-                  height: '25px',
-                  backgroundColor: '#d8a48f',
-                  borderRadius: '100px 100px 0 0',
-                  boxShadow: '0 -5px 10px rgba(0,0,0,0.05)',
-                  borderTop: '1px solid rgba(0,0,0,0.05)'
-                }} />
-              </div>
-            ) : (
-              <View style={styles.finger}>
-                <View style={styles.fingerCrease} />
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.nailContainer,
-                    pressed && { transform: [{ scale: 0.98 }] }
-                  ]}
-                  onPress={() => setShowTriggers(true)}
-                >
-                  <View style={styles.nailBody}>
-                    <View style={styles.lunula} />
-                    <View style={styles.nailTexture} />
-                    <View style={styles.textContainer}>
-                      <Text style={styles.subText}>ICH KAUE</Text>
-                      <Text style={styles.mainText}>GERADE{"\n"}NÄGEL</Text>
-                    </View>
-                  </View>
-                </Pressable>
-                <View style={styles.cuticle} />
               </View>
             )}
           </View>
-        )}
+        </View>
+      )}
 
-        {/* 4. Success Animation UI */}
-        {showSuccess && (
-          <View style={styles.content}>
-            <Animated.View style={{ transform: [{ scale: scaleAnim }], alignItems: 'center' }}>
-              <View style={{ backgroundColor: '#20bf6b', padding: 30, borderRadius: 100, marginBottom: 20 }}>
-                <Check color="white" size={60} />
-              </View>
-              <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#2d3436' }}>Gespeichert!</Text>
-              <Text style={{ fontSize: 16, color: '#636e72', marginTop: 10 }}>Grund erfolgreich erfasst.</Text>
-            </Animated.View>
-          </View>
-        )}
-      </View>
+      {/* 3. Main Button UI */}
+      {!intervention && !showTriggers && !showSuccess && (
+        <View style={[styles.content, { justifyContent: 'flex-end', paddingBottom: 0 }]}>
+          {Platform.OS === 'web' ? (
+            <div style={{
+              width: '300px',
+              height: '420px',
+              backgroundColor: '#d8a48f',
+              borderRadius: '150px 150px 0 0',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              paddingTop: '30px',
+              boxShadow: 'inset 0 0 40px rgba(0,0,0,0.1), 0 20px 40px rgba(0,0,0,0.15)',
+              position: 'relative'
+            }}>
+              {/* Finger crease */}
+              <div style={{
+                position: 'absolute',
+                bottom: '100px',
+                width: '180px',
+                height: '2px',
+                backgroundColor: 'rgba(0,0,0,0.1)',
+                borderRadius: '50%',
+                boxShadow: '0 5px 10px rgba(0,0,0,0.05)'
+              }} />
+
+              <button
+                onClick={() => setShowTriggers(true)}
+                style={{
+                  backgroundColor: '#ffffff', // The white of the distal edge
+                  width: '210px',
+                  height: '295px',
+                  borderTopLeftRadius: '105px',
+                  borderTopRightRadius: '105px',
+                  borderBottomLeftRadius: '90px',
+                  borderBottomRightRadius: '90px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  transition: 'transform 0.2s',
+                  outline: 'none',
+                  boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
+                  padding: '0'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                {/* Nail Body (Pink) - layered on top to create concave white tip */}
+                <div style={{
+                  position: 'absolute',
+                  top: '25px', // Distance of the white tip
+                  left: '0',
+                  right: '0',
+                  bottom: '0',
+                  backgroundColor: '#f8e3df',
+                  borderTopLeftRadius: '90px',
+                  borderTopRightRadius: '90px',
+                  borderBottomLeftRadius: '85px',
+                  borderBottomRightRadius: '85px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                  {/* Lunula */}
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '-15px',
+                    width: '100px',
+                    height: '50px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                    borderRadius: '50px 50px 0 0',
+                    filter: 'blur(1px)'
+                  }} />
+
+                  {/* Subtle vertical nail lines */}
+                  <div style={{
+                    position: 'absolute',
+                    width: '100%',
+                    height: '100%',
+                    background: 'repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,0,0,0.02) 11px)',
+                    pointerEvents: 'none'
+                  }} />
+
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    zIndex: 1,
+                    padding: '20px',
+                    color: '#2d3436',
+                    textShadow: '0 1px 2px rgba(255,255,255,0.8)'
+                  }}>
+                    <span style={{ 
+                      fontSize: '14px', 
+                      textTransform: 'uppercase', 
+                      letterSpacing: '2px', 
+                      fontWeight: '600',
+                      marginBottom: '4px',
+                      opacity: 0.7
+                    }}>{isObservationPhase ? 'Ich kaue' : 'Ich möchte'}</span>
+                    <span style={{ 
+                      fontSize: '28px', 
+                      fontWeight: '900', 
+                      textAlign: 'center',
+                      lineHeight: '1.1'
+                    }}>{isObservationPhase ? <><br/>GERADE NÄGEL</> : <><br/>NÄGEL KAUEN</>}</span>
+                  </div>
+                </div>
+              </button>
+
+              {/* Cuticle / Eponychium */}
+              <div style={{
+                position: 'absolute',
+                bottom: '110px',
+                width: '210px',
+                height: '25px',
+                backgroundColor: '#d8a48f',
+                borderRadius: '100px 100px 0 0',
+                boxShadow: '0 -5px 10px rgba(0,0,0,0.05)',
+                borderTop: '1px solid rgba(0,0,0,0.05)'
+              }} />
+            </div>
+          ) : (
+            <View style={styles.finger}>
+              <View style={styles.fingerCrease} />
+              <Pressable
+                style={({ pressed }) => [
+                  styles.nailContainer,
+                  pressed && { transform: [{ scale: 0.98 }] }
+                ]}
+                onPress={() => setShowTriggers(true)}
+              >
+                <View style={styles.nailBody}>
+                  <View style={styles.lunula} />
+                  <View style={styles.nailTexture} />
+                  <View style={styles.textContainer}>
+                    <Text style={styles.subText}>{isObservationPhase ? 'ICH KAUE' : 'ICH MÖCHTE'}</Text>
+                    <Text style={styles.mainText}>{isObservationPhase ? 'GERADE\nNÄGEL' : 'NÄGEL\nKAUEN'}</Text>
+                  </View>
+                </View>
+              </Pressable>
+              <View style={styles.cuticle} />
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* 4. Success Animation UI */}
+      {showSuccess && (
+        <View style={styles.content}>
+          <Animated.View style={{ transform: [{ scale: scaleAnim }], alignItems: 'center' }}>
+            <View style={{ backgroundColor: '#20bf6b', padding: 30, borderRadius: 100, marginBottom: 20 }}>
+              <Check color="white" size={60} />
+            </View>
+            <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#2d3436' }}>Gespeichert!</Text>
+            <Text style={{ fontSize: 16, color: '#636e72', marginTop: 10 }}>Grund erfolgreich erfasst.</Text>
+          </Animated.View>
+        </View>
+      )}
+    </View>
+  );
+
+  if (Platform.OS === 'web') {
+    return content;
+  }
+
+  return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      {content}
     </TouchableWithoutFeedback>
   );
 }
