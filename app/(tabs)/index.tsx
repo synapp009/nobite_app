@@ -1,7 +1,10 @@
 import { Trigger, useStore } from '@/store/useStore';
 import { Check, Plus, X } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Keyboard, Platform, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Animated, TouchableOpacity, Platform, Dimensions, TextInput, TouchableWithoutFeedback, Keyboard, FlatList } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const { width: screenWidth } = Dimensions.get('window');
 
 const DEFAULT_TRIGGERS: Trigger[] = ['Stress', 'Langeweile', 'Grübeln', 'Müdigkeit'];
 
@@ -14,7 +17,41 @@ export default function LogScreen() {
 
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
-  const { logEvent, markAsReplaced, replacements, firstLaunchAt, events, initFirstLaunch, setReplacement, debugSetFirstLaunch } = useStore();
+  const { 
+    events, 
+    logEvent, 
+    firstLaunchAt, 
+    initFirstLaunch, 
+    replacements, 
+    setReplacement, 
+    debugSetFirstLaunch,
+    hasCompletedOnboarding,
+    setHasCompletedOnboarding,
+    markAsReplaced,
+    resetStore
+  } = useStore();
+
+  const [onboardingIndex, setOnboardingIndex] = useState(0);
+  const slides = [
+    {
+      title: "Willkommen bei NoBite",
+      description: "Der erste Schritt in ein Leben ohne Nägelkauen beginnt heute. Wir begleiten dich mit wissenschaftlich fundierten Methoden.",
+      icon: "✨",
+      color: "#6c5ce7"
+    },
+    {
+      title: "Phase 1: Beobachten",
+      description: "In den ersten 7 Tagen lernst du deine Auslöser kennen. Tippe auf den Nagel, jedes Mal wenn du den Drang spürst.",
+      icon: "🔍",
+      color: "#00b894"
+    },
+    {
+      title: "Phase 2: Verändern",
+      description: "Nach der Beobachtung helfen wir dir, das Kauen durch gesunde Ersatzhandlungen zu ersetzen. Gemeinsam schaffen wir das!",
+      icon: "🚀",
+      color: "#e17055"
+    }
+  ];
 
   const [pendingReplacement, setPendingReplacement] = useState<{ trigger: Trigger; eventId: string } | null>(null);
 
@@ -36,6 +73,11 @@ export default function LogScreen() {
   // Triggers that need replacements after 7 days
   const triggersToFix = allTriggers.filter(t => !replacements.find(r => r.trigger === t));
   const showBatchSetup = !isObservationPhase && triggersToFix.length > 0;
+
+  const handleFinishOnboarding = () => {
+    setHasCompletedOnboarding(true);
+    initFirstLaunch();
+  };
 
   const handleTriggerSelect = (trigger: Trigger) => {
     setShowTriggers(false);
@@ -127,25 +169,33 @@ export default function LogScreen() {
     <View style={styles.container}>
       {/* 0. Timer / Status UI - Only show on main screen */}
       {!intervention && !showTriggers && !pendingReplacement && !showBatchSetup && !showSuccess && (
-        isObservationPhase ? (
-          <View style={styles.timerBadge}>
-            <Text style={styles.timerText}>
-              ⏱️ Noch <Text style={{ fontWeight: 'bold' }}>{daysRemaining} Tage</Text> Beobachtungsphase
-            </Text>
-            <TouchableOpacity
-              onPress={() => debugSetFirstLaunch(Date.now() - 8 * 24 * 60 * 60 * 1000)}
-              style={{ marginTop: 5, padding: 5 }}
-            >
-              <Text style={{ fontSize: 10, color: '#a4b0be', textDecorationLine: 'underline' }}>Debug: Phase überspringen</Text>
+        <View style={styles.statusContainer}>
+          {isObservationPhase ? (
+            <View style={styles.timerBadge}>
+              <Text style={styles.timerText}>
+                <Text style={{ fontSize: 16 }}>⏱️</Text> Noch <Text style={{ fontWeight: '800', color: '#6c5ce7' }}>{daysRemaining} Tage</Text> Beobachtung
+              </Text>
+            </View>
+          ) : (
+            <View style={[styles.timerBadge, styles.activePhaseBadge]}>
+              <Text style={[styles.timerText, { color: '#00b894' }]}>
+                <Text style={{ fontSize: 16 }}>🚀</Text> <Text style={{ fontWeight: '800' }}>Intervention aktiv</Text>
+              </Text>
+            </View>
+          )}
+          
+          {/* Subtle Debug Controls */}
+          <View style={styles.debugContainer}>
+            <TouchableOpacity onPress={() => debugSetFirstLaunch(Date.now() - 8 * 24 * 60 * 60 * 1000)}>
+              <Text style={styles.debugLink}>Phase überspringen</Text>
+            </TouchableOpacity>
+            <View style={styles.debugSeparator} />
+            <TouchableOpacity onPress={resetStore}>
+              <Text style={[styles.debugLink, { color: '#fab1a0' }]}>App Reset</Text>
             </TouchableOpacity>
           </View>
-        ) : (
-          <View style={[styles.timerBadge, { backgroundColor: '#e8f8f0', borderColor: '#20bf6b', borderWidth: 1 }]}>
-            <Text style={[styles.timerText, { color: '#20bf6b', fontWeight: 'bold' }]}>
-              🚀 Interventionsphase aktiv (Tag {daysSinceLaunch - 6})
-            </Text>
-          </View>
-        ))}
+        </View>
+      )}
 
       {/* 0.5 Batch Setup UI (Global Popup) */}
       {showBatchSetup && (
@@ -473,6 +523,64 @@ export default function LogScreen() {
     </View>
   );
 
+  if (!hasCompletedOnboarding) {
+    return (
+      <View style={[styles.container, { backgroundColor: 'white' }]}>
+        <FlatList
+          data={slides}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={(e) => {
+            const index = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
+            setOnboardingIndex(index);
+          }}
+          renderItem={({ item }) => (
+            <View style={{ width: screenWidth, padding: 40, justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={{ fontSize: 80, marginBottom: 40 }}>{item.icon}</Text>
+              <Text style={[styles.modalTitle, { fontSize: 32, marginBottom: 20 }]}>{item.title}</Text>
+              <Text style={{ fontSize: 18, textAlign: 'center', color: '#636e72', lineHeight: 28 }}>{item.description}</Text>
+            </View>
+          )}
+          keyExtractor={(_, index) => index.toString()}
+        />
+        <View style={{ position: 'absolute', bottom: 50, left: 0, right: 0, alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 30 }}>
+            {slides.map((_, i) => (
+              <View 
+                key={i} 
+                style={{ 
+                  width: i === onboardingIndex ? 25 : 10, 
+                  height: 10, 
+                  borderRadius: 5, 
+                  backgroundColor: i === onboardingIndex ? '#2d3436' : '#dfe6e9',
+                  transition: 'width 0.3s' 
+                } as any} 
+              />
+            ))}
+          </View>
+          
+          <TouchableOpacity 
+            style={[styles.actionButton, styles.actionButtonSuccess, { width: screenWidth - 80, height: 60 }]}
+            onPress={() => {
+              if (onboardingIndex < slides.length - 1) {
+                // In a real FlatList we'd use scrollToOffset or scrollToIndex, 
+                // but since it's swipe-based we just wait for the user to swipe.
+                // Or we can add a "Weiter" button.
+              } else {
+                handleFinishOnboarding();
+              }
+            }}
+          >
+            <Text style={[styles.actionButtonText, { fontSize: 18 }]}>
+              {onboardingIndex === slides.length - 1 ? 'Loslegen' : 'Wische nach links'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   if (Platform.OS === 'web') {
     return content;
   }
@@ -601,23 +709,56 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 30,
   },
-  timerBadge: {
-    backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 20,
-    marginTop: 60,
-    marginHorizontal: 40,
+  statusContainer: {
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    right: 0,
     alignItems: 'center',
+    zIndex: 100,
+  },
+  timerBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 40,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    zIndex: 10,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.02)',
+  },
+  activePhaseBadge: {
+    backgroundColor: '#f1fcf6',
+    borderColor: '#00b89433',
   },
   timerText: {
     fontSize: 14,
+    color: '#2d3436',
+    fontWeight: '600',
+    letterSpacing: 0.3,
+  },
+  debugContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    opacity: 0.4,
+  },
+  debugLink: {
+    fontSize: 10,
     color: '#636e72',
+    padding: 5,
+  },
+  debugSeparator: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#dfe6e9',
+    marginHorizontal: 5,
   },
   batchOverlay: {
     position: 'absolute',

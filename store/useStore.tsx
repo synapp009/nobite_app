@@ -21,11 +21,14 @@ export interface AppState {
   events: AppEvent[];
   replacements: Replacement[];
   firstLaunchAt: number | null;
+  hasCompletedOnboarding: boolean;
   initFirstLaunch: () => void;
   logEvent: (trigger: Trigger, intensity?: number) => string;
   markAsReplaced: (eventId: string) => void;
   setReplacement: (trigger: Trigger, action: string) => void;
+  setHasCompletedOnboarding: (status: boolean) => void;
   debugSetFirstLaunch: (timestamp: number) => void;
+  resetStore: () => Promise<void>;
 }
 
 const StoreContext = createContext<AppState | null>(null);
@@ -34,6 +37,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   const [events, setEvents] = useState<AppEvent[]>([]);
   const [replacements, setReplacements] = useState<Replacement[]>([]);
   const [firstLaunchAt, setFirstLaunchAt] = useState<number | null>(null);
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -45,6 +49,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
           setEvents(parsed.events || []);
           setReplacements(parsed.replacements || []);
           setFirstLaunchAt(parsed.firstLaunchAt || null);
+          setHasCompletedOnboarding(parsed.hasCompletedOnboarding || false);
         }
       } catch (e) {
         console.error('Failed to load state', e);
@@ -57,9 +62,9 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (isLoaded) {
-      AsyncStorage.setItem('nobite-storage', JSON.stringify({ events, replacements, firstLaunchAt }));
+      AsyncStorage.setItem('nobite-storage', JSON.stringify({ events, replacements, firstLaunchAt, hasCompletedOnboarding }));
     }
-  }, [events, replacements, firstLaunchAt, isLoaded]);
+  }, [events, replacements, firstLaunchAt, hasCompletedOnboarding, isLoaded]);
 
   const initFirstLaunch = () => {
     if (!firstLaunchAt) {
@@ -98,10 +103,34 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     setFirstLaunchAt(timestamp);
   };
 
+  const resetStore = async () => {
+    try {
+      await AsyncStorage.removeItem('nobite-storage');
+      setEvents([]);
+      setReplacements([]);
+      setFirstLaunchAt(null);
+      setHasCompletedOnboarding(false);
+    } catch (e) {
+      console.error('Failed to reset store', e);
+    }
+  };
+
   if (!isLoaded) return null;
 
   return (
-    <StoreContext.Provider value={{ events, replacements, firstLaunchAt, initFirstLaunch, logEvent, markAsReplaced, setReplacement, debugSetFirstLaunch }}>
+    <StoreContext.Provider value={{ 
+      events, 
+      replacements, 
+      firstLaunchAt, 
+      hasCompletedOnboarding,
+      initFirstLaunch, 
+      logEvent, 
+      markAsReplaced, 
+      setReplacement, 
+      setHasCompletedOnboarding,
+      debugSetFirstLaunch,
+      resetStore
+    }}>
       {children}
     </StoreContext.Provider>
   );
