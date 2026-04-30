@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Pressable, Platform, TextInput, Animated } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Pressable, Platform, TextInput, Animated, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { useStore, Trigger } from '@/store/useStore';
 import { Check, X, Plus } from 'lucide-react-native';
 
@@ -124,7 +124,8 @@ export default function LogScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.container}>
       {/* 0. Timer / Status UI - Only show on main screen */}
       {!intervention && !showTriggers && !pendingReplacement && !showBatchSetup && !showSuccess && (
         isObservationPhase ? (
@@ -184,7 +185,7 @@ export default function LogScreen() {
           
           <View style={styles.interventionActions}>
             <Pressable 
-              style={[styles.actionButton, styles.actionButtonSuccess]}
+              style={[styles.actionButton, styles.actionButtonSuccess, { flex: 1 }]}
               onPress={handleInterventionDone}
             >
               <Check color="white" size={24} />
@@ -192,7 +193,7 @@ export default function LogScreen() {
             </Pressable>
             
             <Pressable 
-              style={[styles.actionButton, styles.actionButtonError]}
+              style={[styles.actionButton, styles.actionButtonError, { flex: 1 }]}
               onPress={handleInterventionIgnored}
             >
               <X color="white" size={24} />
@@ -280,7 +281,7 @@ export default function LogScreen() {
                 
                 <View style={{ flexDirection: 'row', gap: 10, marginTop: 15 }}>
                   <Pressable 
-                    style={({ pressed }) => [styles.actionButton, styles.actionButtonSuccess, pressed && { opacity: 0.8 }]}
+                    style={({ pressed }) => [styles.actionButton, styles.actionButtonSuccess, { flex: 1 }, pressed && { opacity: 0.8 }]}
                     onPress={() => {
                       if (customTriggerText.trim()) {
                         handleTriggerSelect(customTriggerText.trim());
@@ -293,7 +294,7 @@ export default function LogScreen() {
                   </Pressable>
 
                   <Pressable 
-                    style={({ pressed }) => [styles.actionButton, { backgroundColor: '#a4b0be' }, pressed && { opacity: 0.8 }]}
+                    style={({ pressed }) => [styles.actionButton, { backgroundColor: '#a4b0be', flex: 1 }, pressed && { opacity: 0.8 }]}
                     onPress={() => {
                       setIsCustomTrigger(false);
                       setCustomTriggerText('');
@@ -470,7 +471,8 @@ export default function LogScreen() {
           </Animated.View>
         </View>
       )}
-    </View>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -490,10 +492,10 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   finger: {
-    width: 280,
+    width: 300,
     height: 420,
     backgroundColor: '#d8a48f',
-    borderRadius: 140,
+    borderRadius: 150,
     borderBottomLeftRadius: 15,
     borderBottomRightRadius: 15,
     alignItems: 'center',
@@ -514,12 +516,12 @@ const styles = StyleSheet.create({
   },
   nailContainer: {
     backgroundColor: '#ffffff', // The white tip
-    width: 200,
-    height: 300,
-    borderTopLeftRadius: 100,
-    borderTopRightRadius: 100,
-    borderBottomLeftRadius: 80,
-    borderBottomRightRadius: 80,
+    width: 210,
+    height: 280,
+    borderTopLeftRadius: 105,
+    borderTopRightRadius: 105,
+    borderBottomLeftRadius: 90,
+    borderBottomRightRadius: 90,
     overflow: 'hidden',
     position: 'relative',
     shadowColor: '#000',
@@ -535,10 +537,10 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: '#f8e3df',
-    borderTopLeftRadius: 85, // Concave effect
-    borderTopRightRadius: 85,
-    borderBottomLeftRadius: 75,
-    borderBottomRightRadius: 75,
+    borderTopLeftRadius: 90, // Concave effect
+    borderTopRightRadius: 90,
+    borderBottomLeftRadius: 85,
+    borderBottomRightRadius: 85,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -547,8 +549,9 @@ const styles = StyleSheet.create({
     bottom: -15,
     width: 100,
     height: 50,
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-    borderRadius: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
   },
   nailTexture: {
     position: 'absolute',
@@ -560,13 +563,15 @@ const styles = StyleSheet.create({
   },
   cuticle: {
     position: 'absolute',
-    bottom: 105,
-    width: 200,
-    height: 20,
+    bottom: 0,
+    width: '100%',
+    height: 130,
     backgroundColor: '#d8a48f',
-    borderRadius: 20,
+    borderTopLeftRadius: 110,
+    borderTopRightRadius: 110,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.05)',
+    borderTopColor: 'rgba(0,0,0,0.1)',
+    zIndex: 2,
   },
   textContainer: {
     alignItems: 'center',
@@ -704,7 +709,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   actionButton: {
-    flex: 1,
     padding: 18,
     borderRadius: 15,
     flexDirection: 'row',
