@@ -1,33 +1,46 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
-
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { ShieldAlert, BarChart3, Settings2 } from 'lucide-react-native';
+import { useEffect } from 'react';
+import { useStore } from '@/store/useStore';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const tintColor = '#2b7a78';
+  const { initFirstLaunch, firstLaunchAt } = useStore();
+
+  useEffect(() => {
+    initFirstLaunch();
+  }, [initFirstLaunch]);
+
+  const now = Date.now();
+  const daysSinceLaunch = firstLaunchAt ? Math.floor((now - firstLaunchAt) / (1000 * 60 * 60 * 24)) : 0;
+  const isObservationPhase = daysSinceLaunch < 5;
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
+        tabBarActiveTintColor: tintColor,
+        headerShown: true,
+        headerTintColor: tintColor,
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: 'Log',
+          tabBarIcon: ({ color }) => <ShieldAlert size={28} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="patterns"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Patterns',
+          tabBarIcon: ({ color }) => <BarChart3 size={28} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="replacements"
+        options={{
+          title: 'Replacements',
+          tabBarIcon: ({ color }) => <Settings2 size={28} color={color} />,
         }}
       />
     </Tabs>
