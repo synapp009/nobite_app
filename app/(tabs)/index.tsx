@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Pressable, Platform, TextInput, Animated } from 'react-native';
 import { useStore, Trigger } from '@/store/useStore';
 import { Check, X, Plus } from 'lucide-react-native';
@@ -14,17 +14,28 @@ export default function LogScreen() {
   
   const scaleAnim = useRef(new Animated.Value(0)).current;
   
-  const { logEvent, markAsReplaced, replacements, firstLaunchAt, events } = useStore();
+  const { logEvent, markAsReplaced, replacements, firstLaunchAt, events, initFirstLaunch, setReplacement, debugSetFirstLaunch } = useStore();
+  
+  const [pendingReplacement, setPendingReplacement] = useState<{ trigger: Trigger; eventId: string } | null>(null);
 
-  const now = Date.now();
-  const daysSinceLaunch = firstLaunchAt ? Math.floor((now - firstLaunchAt) / (1000 * 60 * 60 * 24)) : 0;
-  const isObservationPhase = daysSinceLaunch < 5;
+  useEffect(() => {
+    initFirstLaunch();
+  }, []);
 
   // Extract unique custom triggers from logged events
   const customTriggers = Array.from(new Set(events.map(e => e.trigger)))
     .filter(t => !DEFAULT_TRIGGERS.includes(t));
   
   const allTriggers = [...DEFAULT_TRIGGERS, ...customTriggers];
+
+  const now = Date.now();
+  const daysSinceLaunch = firstLaunchAt ? Math.floor((now - firstLaunchAt) / (1000 * 60 * 60 * 24)) : 0;
+  const isObservationPhase = daysSinceLaunch < 7;
+  const daysRemaining = Math.max(0, 7 - daysSinceLaunch);
+
+  // Triggers that need replacements after 7 days
+  const triggersToFix = allTriggers.filter(t => !replacements.find(r => r.trigger === t));
+  const showBatchSetup = !isObservationPhase && triggersToFix.length > 0;
 
   const handleTriggerSelect = (trigger: Trigger) => {
     setShowTriggers(false);
@@ -34,6 +45,10 @@ export default function LogScreen() {
       const replacement = replacements.find(r => r.trigger === trigger);
       if (replacement) {
         setIntervention({ trigger, action: replacement.action, eventId });
+        return;
+      } else {
+        // Force replacement entry
+        setPendingReplacement({ trigger, eventId });
         return;
       }
     }
@@ -86,12 +101,85 @@ export default function LogScreen() {
     setIntervention(null);
   };
 
+  const handleSaveForcedReplacement = (action: string) => {
+    if (pendingReplacement) {
+      setReplacement(pendingReplacement.trigger, action);
+      setIntervention({ 
+        trigger: pendingReplacement.trigger, 
+        action: action, 
+        eventId: pendingReplacement.eventId 
+      });
+      setPendingReplacement(null);
+    }
+  };
+
+  const [batchInput, setBatchInput] = useState('');
+  const currentBatchTrigger = triggersToFix[0];
+
+  const handleSaveBatchItem = () => {
+    if (batchInput.trim() && currentBatchTrigger) {
+      setReplacement(currentBatchTrigger, batchInput.trim());
+      setBatchInput('');
+    }
+  };
+
   return (
     <View style={styles.container}>
+      {/* 0. Timer / Status UI - Only show on main screen */}
+      {!intervention && !showTriggers && !pendingReplacement && !showBatchSetup && !showSuccess && (
+        isObservationPhase ? (
+        <View style={styles.timerBadge}>
+          <Text style={styles.timerText}>
+            ⏱️ Noch <Text style={{ fontWeight: 'bold' }}>{daysRemaining} Tage</Text> Beobachtungsphase
+          </Text>
+          <TouchableOpacity 
+            onPress={() => debugSetFirstLaunch(Date.now() - 8 * 24 * 60 * 60 * 1000)}
+            style={{ marginTop: 5, padding: 5 }}
+          >
+            <Text style={{ fontSize: 10, color: '#a4b0be', textDecorationLine: 'underline' }}>Debug: Phase überspringen</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={[styles.timerBadge, { backgroundColor: '#e8f8f0', borderColor: '#20bf6b', borderWidth: 1 }]}>
+          <Text style={[styles.timerText, { color: '#20bf6b', fontWeight: 'bold' }]}>
+            🚀 Interventionsphase aktiv (Tag {daysSinceLaunch - 6})
+          </Text>
+        </View>
+      ))}
+
+      {/* 0.5 Batch Setup UI (Global Popup) */}
+      {showBatchSetup && (
+        <View style={[styles.content, styles.batchOverlay]}>
+          <View style={styles.batchCard}>
+            <Text style={styles.modalTitle}>Setze deine Strategien</Text>
+            <Text style={styles.batchSubtitle}>
+              Die Beobachtung ist vorbei! Lege für jedes Muster eine Ersatzhandlung fest.
+              ({triggersToFix.length} verbleibend)
+            </Text>
+            
+            <View style={styles.batchItem}>
+              <Text style={styles.batchTriggerLabel}>Wenn ich <Text style={{fontWeight: 'bold'}}>{currentBatchTrigger}</Text> fühle...</Text>
+              <TextInput
+                style={styles.customInput}
+                placeholder="Meine Ersatzhandlung..."
+                value={batchInput}
+                onChangeText={setBatchInput}
+                autoFocus
+              />
+              <TouchableOpacity 
+                style={[styles.actionButton, styles.actionButtonSuccess, { marginTop: 15 }]}
+                onPress={handleSaveBatchItem}
+              >
+                <Text style={styles.actionButtonText}>Speichern & Weiter</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
       {/* 1. Intervention UI */}
       {!!intervention && (
         <View style={[styles.content, { padding: 20 }]}>
-          <Text style={styles.interventionTitle}>Statt Nägelkauen:</Text>
+          <Text style={styles.interventionTitle}>Statt Nägelkauen ({intervention.trigger}):</Text>
           <Text style={styles.interventionAction}>👉 {intervention.action}</Text>
           
           <View style={styles.interventionActions}>
@@ -111,6 +199,31 @@ export default function LogScreen() {
               <Text style={styles.actionButtonText}>Ignoriert</Text>
             </Pressable>
           </View>
+        </View>
+      )}
+
+      {/* 1.5 Forced Replacement UI */}
+      {!!pendingReplacement && (
+        <View style={[styles.content, { padding: 20 }]}>
+          <Text style={styles.modalTitle}>Ausgleichshandlung festlegen</Text>
+          <Text style={{ textAlign: 'center', marginBottom: 20, color: '#636e72' }}>
+            Was möchtest du stattdessen tun, wenn du <Text style={{ fontWeight: 'bold' }}>{pendingReplacement.trigger}</Text> spürst?
+          </Text>
+          
+          <TextInput
+            style={styles.customInput}
+            placeholder="z.B. Faust ballen, tief atmen..."
+            autoFocus
+            onSubmitEditing={(e) => {
+              if (e.nativeEvent.text.trim()) {
+                handleSaveForcedReplacement(e.nativeEvent.text.trim());
+              }
+            }}
+          />
+          
+          <Text style={{ marginTop: 10, fontSize: 12, color: '#a4b0be', textAlign: 'center' }}>
+            Du musst eine Handlung festlegen, um fortzufahren.
+          </Text>
         </View>
       )}
 
@@ -199,33 +312,148 @@ export default function LogScreen() {
       {!intervention && !showTriggers && !showSuccess && (
         <View style={styles.content}>
           {Platform.OS === 'web' ? (
-            <button 
-              onClick={() => setShowTriggers(true)}
-              style={{
-                backgroundColor: '#ff6b6b',
-                width: '280px',
-                height: '280px',
-                borderRadius: '140px',
-                color: 'white',
-                fontSize: '24px',
-                fontWeight: 'bold',
-                border: 'none',
-                cursor: 'pointer',
-                boxShadow: '0 10px 20px rgba(255, 107, 107, 0.3)'
-              }}
-            >
-              Ich kaue gerade Nägel
-            </button>
+            <div style={{
+              width: '300px',
+              height: '450px',
+              backgroundColor: '#d8a48f',
+              borderRadius: '150px 150px 15px 15px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              paddingTop: '30px',
+              boxShadow: 'inset 0 0 40px rgba(0,0,0,0.1), 0 20px 40px rgba(0,0,0,0.15)',
+              position: 'relative'
+            }}>
+              {/* Finger crease */}
+              <div style={{
+                position: 'absolute',
+                bottom: '100px',
+                width: '180px',
+                height: '2px',
+                backgroundColor: 'rgba(0,0,0,0.1)',
+                borderRadius: '50%',
+                boxShadow: '0 5px 10px rgba(0,0,0,0.05)'
+              }} />
+
+              <button 
+                onClick={() => setShowTriggers(true)}
+                style={{
+                  backgroundColor: '#ffffff', // The white of the distal edge
+                  width: '210px',
+                  height: '320px',
+                  borderTopLeftRadius: '105px',
+                  borderTopRightRadius: '105px',
+                  borderBottomLeftRadius: '90px',
+                  borderBottomRightRadius: '90px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  transition: 'transform 0.2s',
+                  outline: 'none',
+                  boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
+                  padding: '0'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                {/* Nail Body (Pink) - layered on top to create concave white tip */}
+                <div style={{
+                  position: 'absolute',
+                  top: '25px', // Distance of the white tip
+                  left: '0',
+                  right: '0',
+                  bottom: '0',
+                  backgroundColor: '#f8e3df',
+                  borderTopLeftRadius: '90px', 
+                  borderTopRightRadius: '90px',
+                  borderBottomLeftRadius: '85px',
+                  borderBottomRightRadius: '85px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                  {/* Lunula */}
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '-15px',
+                    width: '100px',
+                    height: '50px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                    borderRadius: '50px 50px 0 0',
+                    filter: 'blur(1px)'
+                  }} />
+                  
+                  {/* Subtle vertical nail lines */}
+                  <div style={{
+                    position: 'absolute',
+                    width: '100%',
+                    height: '100%',
+                    background: 'repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,0,0,0.02) 11px)',
+                    pointerEvents: 'none'
+                  }} />
+
+                  <div style={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    zIndex: 1, 
+                    padding: '20px', 
+                    color: '#2d3436',
+                    textShadow: '0 1px 2px rgba(255,255,255,0.8)'
+                  }}>
+                    <span style={{ 
+                      fontSize: '14px', 
+                      textTransform: 'uppercase', 
+                      letterSpacing: '2px', 
+                      fontWeight: '600',
+                      marginBottom: '4px',
+                      opacity: 0.7
+                    }}>Ich kaue</span>
+                    <span style={{ 
+                      fontSize: '28px', 
+                      fontWeight: '900', 
+                      textAlign: 'center',
+                      lineHeight: '1.1'
+                    }}>GERADE<br/>NÄGEL</span>
+                  </div>
+                </div>
+              </button>
+
+              {/* Cuticle / Eponychium */}
+              <div style={{
+                position: 'absolute',
+                bottom: '110px',
+                width: '210px',
+                height: '25px',
+                backgroundColor: '#d8a48f',
+                borderRadius: '0 0 100px 100px',
+                boxShadow: '0 -5px 10px rgba(0,0,0,0.05)',
+                borderTop: '1px solid rgba(0,0,0,0.05)'
+              }} />
+            </div>
           ) : (
-            <Pressable 
-              style={({ pressed }) => [
-                styles.mainButton,
-                pressed && { opacity: 0.8 }
-              ]} 
-              onPress={() => setShowTriggers(true)}
-            >
-              <Text style={styles.mainButtonText}>Ich kaue gerade Nägel</Text>
-            </Pressable>
+            <View style={styles.finger}>
+              <View style={styles.fingerCrease} />
+              <Pressable 
+                style={({ pressed }) => [
+                  styles.nailContainer,
+                  pressed && { transform: [{ scale: 0.98 }] }
+                ]} 
+                onPress={() => setShowTriggers(true)}
+              >
+                <View style={styles.nailBody}>
+                  <View style={styles.lunula} />
+                  <View style={styles.nailTexture} />
+                  <View style={styles.textContainer}>
+                    <Text style={styles.subText}>ICH KAUE</Text>
+                    <Text style={styles.mainText}>GERADE{"\n"}NÄGEL</Text>
+                  </View>
+                </View>
+              </Pressable>
+              <View style={styles.cuticle} />
+            </View>
           )}
         </View>
       )}
@@ -261,25 +489,159 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
-  mainButton: {
-    backgroundColor: '#ff6b6b',
+  finger: {
     width: 280,
-    height: 280,
+    height: 420,
+    backgroundColor: '#d8a48f',
     borderRadius: 140,
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
+    alignItems: 'center',
+    paddingTop: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 10,
+    position: 'relative',
+  },
+  fingerCrease: {
+    position: 'absolute',
+    bottom: 100,
+    width: 160,
+    height: 1,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+  },
+  nailContainer: {
+    backgroundColor: '#ffffff', // The white tip
+    width: 200,
+    height: 300,
+    borderTopLeftRadius: 100,
+    borderTopRightRadius: 100,
+    borderBottomLeftRadius: 80,
+    borderBottomRightRadius: 80,
+    overflow: 'hidden',
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  nailBody: {
+    position: 'absolute',
+    top: 25,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#f8e3df',
+    borderTopLeftRadius: 85, // Concave effect
+    borderTopRightRadius: 85,
+    borderBottomLeftRadius: 75,
+    borderBottomRightRadius: 75,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#ff6b6b',
+  },
+  lunula: {
+    position: 'absolute',
+    bottom: -15,
+    width: 100,
+    height: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    borderRadius: 50,
+  },
+  nailTexture: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    opacity: 0.05,
+    // Note: React Native doesn't support gradients natively without expo-linear-gradient
+    // This is a placeholder for texture
+  },
+  cuticle: {
+    position: 'absolute',
+    bottom: 105,
+    width: 200,
+    height: 20,
+    backgroundColor: '#d8a48f',
+    borderRadius: 20,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.05)',
+  },
+  textContainer: {
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  subText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2d3436',
+    letterSpacing: 2,
+    marginBottom: 4,
+    opacity: 0.7,
+  },
+  mainText: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#2d3436',
+    textAlign: 'center',
+    lineHeight: 30,
+  },
+  timerBadge: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 20,
+    marginTop: 60,
+    marginHorizontal: 40,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 10,
+  },
+  timerText: {
+    fontSize: 14,
+    color: '#636e72',
+  },
+  batchOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(245, 247, 250, 0.98)',
+    zIndex: 2000,
+    justifyContent: 'center',
+    padding: 20,
+  },
+  batchCard: {
+    backgroundColor: 'white',
+    borderRadius: 30,
+    padding: 30,
+    width: '100%',
+    maxWidth: 400,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.1,
     shadowRadius: 20,
     elevation: 10,
   },
-  mainButtonText: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
+  batchSubtitle: {
+    fontSize: 16,
+    color: '#636e72',
     textAlign: 'center',
-    paddingHorizontal: 20,
+    marginBottom: 30,
+    lineHeight: 22,
+  },
+  batchItem: {
+    width: '100%',
+  },
+  batchTriggerLabel: {
+    fontSize: 18,
+    color: '#2d3436',
+    marginBottom: 10,
   },
   modalOverlay: {
     flex: 1,
@@ -369,4 +731,7 @@ const styles = StyleSheet.create({
     color: '#2d3436',
     width: '100%',
   },
+  batchOverlay_web: {
+    // Shared with mobile through styles.batchOverlay
+  }
 });

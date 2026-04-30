@@ -25,6 +25,7 @@ export interface AppState {
   logEvent: (trigger: Trigger, intensity?: number) => string;
   markAsReplaced: (eventId: string) => void;
   setReplacement: (trigger: Trigger, action: string) => void;
+  debugSetFirstLaunch: (timestamp: number) => void;
 }
 
 const StoreContext = createContext<AppState | null>(null);
@@ -93,10 +94,14 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
+  const debugSetFirstLaunch = (timestamp: number) => {
+    setFirstLaunchAt(timestamp);
+  };
+
   if (!isLoaded) return null;
 
   return (
-    <StoreContext.Provider value={{ events, replacements, firstLaunchAt, initFirstLaunch, logEvent, markAsReplaced, setReplacement }}>
+    <StoreContext.Provider value={{ events, replacements, firstLaunchAt, initFirstLaunch, logEvent, markAsReplaced, setReplacement, debugSetFirstLaunch }}>
       {children}
     </StoreContext.Provider>
   );
