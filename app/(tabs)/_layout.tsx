@@ -1,7 +1,38 @@
 import { Tabs } from 'expo-router';
 import { ShieldAlert, BarChart3, Settings2 } from 'lucide-react-native';
 import { useEffect } from 'react';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { useStore } from '@/store/useStore';
+
+// Custom header title component
+function AppHeader({ title }: { title: string }) {
+  return (
+    <View style={headerStyles.container}>
+      <View style={headerStyles.dot} />
+      <Text style={headerStyles.title}>{title}</Text>
+    </View>
+  );
+}
+
+const headerStyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#8fd8a4',
+  },
+  title: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#2d3436',
+    letterSpacing: 0.3,
+  },
+});
 
 export default function TabLayout() {
   const tintColor = '#8fd8a4';
@@ -23,41 +54,78 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: tintColor,
-        tabBarInactiveTintColor: '#a4b0be',
+        tabBarInactiveTintColor: '#c4cdd4',
         headerShown: true,
         headerTintColor: tintColor,
         headerStyle: {
-          backgroundColor: '#fff',
+          backgroundColor: '#ffffff',
+          // Shadow for floating effect
+          ...Platform.select({
+            ios: {
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.06,
+              shadowRadius: 8,
+            },
+            android: { elevation: 3 },
+            default: {},
+          }),
         },
+        // Remove the default bottom border line
+        headerShadowVisible: false,
         tabBarStyle: {
-          backgroundColor: '#fff',
-          borderTopWidth: 1,
-          borderTopColor: '#f1f2f6',
+          backgroundColor: '#ffffff',
+          borderTopWidth: 0,
+          // Soft shadow on tab bar instead of a hard border
+          ...Platform.select({
+            ios: {
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: -2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 12,
+            },
+            android: { elevation: 8 },
+            default: {},
+          }),
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 6,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '600',
+          letterSpacing: 0.2,
         },
         headerTitleStyle: {
-          fontWeight: 'bold',
+          fontWeight: '700',
+          fontSize: 17,
+          letterSpacing: 0.3,
+          color: '#2d3436',
         },
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Log',
-          tabBarIcon: ({ color }) => <ShieldAlert size={28} color={color} />,
+          headerTitle: () => <AppHeader title="NoBite" />,
+          tabBarLabel: 'Log',
+          tabBarIcon: ({ color, size }) => <ShieldAlert size={size} color={color} />,
           ...hiddenDuringOnboarding,
         }}
       />
       <Tabs.Screen
         name="patterns"
         options={{
-          title: 'Patterns',
-          tabBarIcon: ({ color }) => <BarChart3 size={28} color={color} />,
+          headerTitle: () => <AppHeader title="Muster" />,
+          tabBarLabel: 'Muster',
+          tabBarIcon: ({ color, size }) => <BarChart3 size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="replacements"
         options={{
-          title: 'Replacements',
-          tabBarIcon: ({ color }) => <Settings2 size={28} color={color} />,
+          headerTitle: () => <AppHeader title="Strategien" />,
+          tabBarLabel: 'Strategien',
+          tabBarIcon: ({ color, size }) => <Settings2 size={size} color={color} />,
         }}
       />
     </Tabs>
