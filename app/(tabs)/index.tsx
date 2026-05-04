@@ -2,11 +2,48 @@ import { Trigger, useStore } from '@/store/useStore';
 import { Check, Plus, X } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Animated, TouchableOpacity, Platform, Dimensions, TextInput, TouchableWithoutFeedback, Keyboard, FlatList } from 'react-native';
+import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 const DEFAULT_TRIGGERS: Trigger[] = ['Stress', 'Langeweile', 'Grübeln', 'Müdigkeit'];
+
+const BittenNail = ({ width, height, pulseAnim }: { width: number, height: number, pulseAnim?: any }) => {
+  return (
+    <Animated.View style={{ width, height, transform: [{ scale: pulseAnim || 1 }] }}>
+      <Svg width="100%" height="100%" viewBox="0 0 100 130" preserveAspectRatio="none">
+        <Defs>
+          <LinearGradient id="nailGrad" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor="#f8e3df" />
+            <Stop offset="1" stopColor="#f3ccc3" />
+          </LinearGradient>
+        </Defs>
+        <Path 
+          d="M 0 30 L 12 27 L 22 32 L 32 25 L 42 33 L 55 28 L 68 35 L 78 27 L 88 32 L 100 28 L 100 95 C 100 120 80 130 50 130 C 20 130 0 120 0 95 Z" 
+          fill="white" 
+        />
+        <Path 
+          d="M 4 38 L 14 35 L 24 40 L 34 33 L 44 41 L 56 35 L 68 42 L 78 34 L 88 39 L 96 38 L 96 95 C 96 115 75 125 50 125 C 25 125 4 115 4 95 Z" 
+          fill="url(#nailGrad)" 
+        />
+        <Path 
+          d="M 30 130 C 30 110 70 110 70 130 Z" 
+          fill="rgba(255, 255, 255, 0.7)" 
+        />
+        <Path 
+          d="M 0 30 L 12 27 L 22 32 L 32 25 L 42 33 L 55 28 L 68 35 L 78 27 L 88 32 L 100 28" 
+          fill="none" 
+          stroke="#ff7675" 
+          strokeWidth="1.5" 
+          opacity="0.6"
+        />
+        <Path d="M 22 32 L 24 34" stroke="#d63031" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+        <Path d="M 68 35 L 70 37" stroke="#d63031" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+      </Svg>
+    </Animated.View>
+  );
+};
 
 export default function LogScreen() {
   const [showTriggers, setShowTriggers] = useState(false);
@@ -16,6 +53,25 @@ export default function LogScreen() {
   const [showSuccess, setShowSuccess] = useState(false);
 
   const scaleAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const flatListRef = useRef<any>(null);
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   const { 
     events, 
@@ -527,6 +583,8 @@ export default function LogScreen() {
     return (
       <View style={[styles.container, { backgroundColor: 'white' }]}>
         <FlatList
+          ref={flatListRef}
+          style={{ flex: 1 }}
           data={slides}
           horizontal
           pagingEnabled
@@ -535,11 +593,77 @@ export default function LogScreen() {
             const index = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
             setOnboardingIndex(index);
           }}
-          renderItem={({ item }) => (
-            <View style={{ width: screenWidth, padding: 40, justifyContent: 'center', alignItems: 'center' }}>
-              <Text style={{ fontSize: 80, marginBottom: 40 }}>{item.icon}</Text>
-              <Text style={[styles.modalTitle, { fontSize: 32, marginBottom: 20 }]}>{item.title}</Text>
-              <Text style={{ fontSize: 18, textAlign: 'center', color: '#636e72', lineHeight: 28 }}>{item.description}</Text>
+          renderItem={({ item, index }) => (
+            <View style={{ width: screenWidth, height: screenHeight - 160, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40, paddingBottom: 40 }}>
+              {index === 1 ? (
+                <View style={{ marginBottom: 32, alignItems: 'center' }}>
+                  {/* Phase 1: Bitten nail - proportionally scaled from main screen */}
+                  <View style={{
+                    width: 150,
+                    height: 210,
+                    backgroundColor: '#d8a48f',
+                    borderTopLeftRadius: 75,
+                    borderTopRightRadius: 75,
+                    borderBottomLeftRadius: 7,
+                    borderBottomRightRadius: 7,
+                    alignItems: 'center',
+                    paddingTop: 15,
+                    position: 'relative',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 5 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 8,
+                    elevation: 8,
+                  }}>
+                    {/* Finger crease */}
+                    <View style={{ position: 'absolute', bottom: 50, width: 90, height: 1, backgroundColor: 'rgba(0,0,0,0.1)', zIndex: 3 }} />
+                    <BittenNail width={105} height={140} pulseAnim={pulseAnim} />
+                    {/* Cuticle */}
+                    <View style={{ position: 'absolute', bottom: 0, width: '100%', height: 65, backgroundColor: '#d8a48f', borderTopLeftRadius: 55, borderTopRightRadius: 55, borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.1)', zIndex: 2 }} />
+                  </View>
+                </View>
+              ) : index === 2 ? (
+                <View style={{ marginBottom: 32, alignItems: 'center' }}>
+                  {/* Phase 2: Healthy nail - proportionally scaled from main screen */}
+                  <View style={{
+                    width: 150,
+                    height: 210,
+                    backgroundColor: '#d8a48f',
+                    borderTopLeftRadius: 75,
+                    borderTopRightRadius: 75,
+                    borderBottomLeftRadius: 7,
+                    borderBottomRightRadius: 7,
+                    alignItems: 'center',
+                    paddingTop: 15,
+                    position: 'relative',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 5 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 8,
+                    elevation: 8,
+                  }}>
+                    {/* Finger crease */}
+                    <View style={{ position: 'absolute', bottom: 50, width: 90, height: 1, backgroundColor: 'rgba(0,0,0,0.1)', zIndex: 3 }} />
+                    {/* Nail container (white tip) */}
+                    <View style={{ backgroundColor: '#ffffff', width: 105, height: 140, borderTopLeftRadius: 52, borderTopRightRadius: 52, borderBottomLeftRadius: 45, borderBottomRightRadius: 45, overflow: 'hidden', position: 'relative', zIndex: 1 }}>
+                      {/* Nail body */}
+                      <View style={{ position: 'absolute', top: 12, left: 0, right: 0, bottom: 0, backgroundColor: '#f8e3df', borderTopLeftRadius: 45, borderTopRightRadius: 45, borderBottomLeftRadius: 42, borderBottomRightRadius: 42, justifyContent: 'center', alignItems: 'center' }}>
+                        {/* Lunula */}
+                        <View style={{ position: 'absolute', bottom: -7, width: 50, height: 25, backgroundColor: 'rgba(255,255,255,0.7)', borderTopLeftRadius: 25, borderTopRightRadius: 25 }} />
+                      </View>
+                    </View>
+                    {/* Cuticle */}
+                    <View style={{ position: 'absolute', bottom: 0, width: '100%', height: 65, backgroundColor: '#d8a48f', borderTopLeftRadius: 55, borderTopRightRadius: 55, borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.1)', zIndex: 2 }} />
+                    {/* Sparkles */}
+                    <Animated.Text style={{ position: 'absolute', top: 10, left: 10, fontSize: 24, opacity: pulseAnim, transform: [{scale: pulseAnim}] }}>✨</Animated.Text>
+                    <Animated.Text style={{ position: 'absolute', top: 30, right: 5, fontSize: 20, opacity: pulseAnim, transform: [{scale: pulseAnim}] }}>✨</Animated.Text>
+                  </View>
+                </View>
+              ) : (
+                <Text style={{ fontSize: 80, marginBottom: 32 }}>{item.icon}</Text>
+              )}
+              <Text style={[styles.modalTitle, { fontSize: 28, marginBottom: 16, textAlign: 'center' }]}>{item.title}</Text>
+              <Text style={{ fontSize: 17, textAlign: 'center', color: '#636e72', lineHeight: 26 }}>{item.description}</Text>
             </View>
           )}
           keyExtractor={(_, index) => index.toString()}
@@ -564,16 +688,14 @@ export default function LogScreen() {
             style={[styles.actionButton, styles.actionButtonSuccess, { width: screenWidth - 80, height: 60 }]}
             onPress={() => {
               if (onboardingIndex < slides.length - 1) {
-                // In a real FlatList we'd use scrollToOffset or scrollToIndex, 
-                // but since it's swipe-based we just wait for the user to swipe.
-                // Or we can add a "Weiter" button.
+                flatListRef.current?.scrollToIndex({ index: onboardingIndex + 1, animated: true });
               } else {
                 handleFinishOnboarding();
               }
             }}
           >
             <Text style={[styles.actionButtonText, { fontSize: 18 }]}>
-              {onboardingIndex === slides.length - 1 ? 'Loslegen' : 'Wische nach links'}
+              {onboardingIndex === slides.length - 1 ? 'Loslegen 🚀' : 'Weiter'}
             </Text>
           </TouchableOpacity>
         </View>
