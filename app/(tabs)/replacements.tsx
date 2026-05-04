@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 16,
-    color: '#2b7a78',
+    color: '#8fd8a4',
     fontWeight: '600',
     flex: 1,
   },
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     color: '#2d3436',
   },
   saveButton: {
-    backgroundColor: '#20bf6b',
+    backgroundColor: '#8fd8a4',
     padding: 15,
     borderRadius: 10,
     marginLeft: 10,

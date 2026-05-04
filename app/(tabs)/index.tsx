@@ -93,7 +93,7 @@ export default function LogScreen() {
       title: "Willkommen bei NoBite",
       description: "Der erste Schritt in ein Leben ohne Nägelkauen beginnt heute. Wir begleiten dich mit wissenschaftlich fundierten Methoden.",
       icon: "✨",
-      color: "#6c5ce7"
+      color: "#a48fd8"
     },
     {
       title: "Phase 1: Beobachten",
@@ -234,7 +234,7 @@ export default function LogScreen() {
             </View>
           ) : (
             <View style={[styles.timerBadge, styles.activePhaseBadge]}>
-              <Text style={[styles.timerText, { color: '#00b894' }]}>
+              <Text style={[styles.timerText, { color: '#8fd8a4' }]}>
                 <Text style={{ fontSize: 16 }}>🚀</Text> <Text style={{ fontWeight: '800' }}>Intervention aktiv</Text>
               </Text>
             </View>
@@ -568,7 +568,7 @@ export default function LogScreen() {
       {showSuccess && (
         <View style={styles.content}>
           <Animated.View style={{ transform: [{ scale: scaleAnim }], alignItems: 'center' }}>
-            <View style={{ backgroundColor: '#20bf6b', padding: 30, borderRadius: 100, marginBottom: 20 }}>
+            <View style={{ backgroundColor: '#8fd8a4', padding: 30, borderRadius: 100, marginBottom: 20 }}>
               <Check color="white" size={60} />
             </View>
             <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#2d3436' }}>Gespeichert!</Text>
@@ -855,8 +855,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0,0,0,0.02)',
   },
   activePhaseBadge: {
-    backgroundColor: '#f1fcf6',
-    borderColor: '#00b89433',
+    backgroundColor: 'rgba(143,216,164,0.1)',
+    borderColor: 'rgba(143,216,164,0.4)',
   },
   timerText: {
     fontSize: 14,
@@ -971,7 +971,7 @@ const styles = StyleSheet.create({
   interventionAction: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#2b7a78',
+    color: '#8fd8a4',
     marginBottom: 40,
     textAlign: 'center',
   },
@@ -989,7 +989,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   actionButtonSuccess: {
-    backgroundColor: '#20bf6b',
+    backgroundColor: '#8fd8a4',
   },
   actionButtonError: {
     backgroundColor: '#eb3b5a',

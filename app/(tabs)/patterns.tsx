@@ -55,7 +55,7 @@ export default function PatternsScreen() {
                   <View 
                     style={[
                       styles.progressBarFill, 
-                      { width: `${percentage}%`, backgroundColor: index === 0 ? '#ff6b6b' : '#a4b0be' }
+                      { width: `${percentage}%`, backgroundColor: index === 0 ? '#8fd8a4' : 'rgba(143,216,164,0.35)' }
                     ]} 
                   />
                 </View>
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#2b7a78',
+    color: '#8fd8a4',
     marginBottom: 5,
   },
   statLabel: {

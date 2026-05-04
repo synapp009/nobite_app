@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 
 export default function TabLayout() {
-  const tintColor = '#2b7a78';
+  const tintColor = '#8fd8a4';
   const { initFirstLaunch, firstLaunchAt, hasCompletedOnboarding } = useStore();
 
   useEffect(() => {
