@@ -5,7 +5,7 @@ import { useStore } from '@/store/useStore';
 
 export default function TabLayout() {
   const tintColor = '#2b7a78';
-  const { initFirstLaunch, firstLaunchAt } = useStore();
+  const { initFirstLaunch, firstLaunchAt, hasCompletedOnboarding } = useStore();
 
   useEffect(() => {
     initFirstLaunch();
@@ -14,6 +14,10 @@ export default function TabLayout() {
   const now = Date.now();
   const daysSinceLaunch = firstLaunchAt ? Math.floor((now - firstLaunchAt) / (1000 * 60 * 60 * 24)) : 0;
   const isObservationPhase = daysSinceLaunch < 5;
+
+  const hiddenDuringOnboarding = !hasCompletedOnboarding
+    ? { headerShown: false, tabBarStyle: { display: 'none' as const } }
+    : {};
 
   return (
     <Tabs
@@ -39,6 +43,7 @@ export default function TabLayout() {
         options={{
           title: 'Log',
           tabBarIcon: ({ color }) => <ShieldAlert size={28} color={color} />,
+          ...hiddenDuringOnboarding,
         }}
       />
       <Tabs.Screen
