@@ -593,6 +593,7 @@ export default function LogScreen() {
             const index = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
             setOnboardingIndex(index);
           }}
+          scrollEventThrottle={16}
           renderItem={({ item, index }) => (
             <View style={{ width: screenWidth, height: screenHeight - 160, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40, paddingBottom: 40 }}>
               {index === 1 ? (
@@ -677,9 +678,8 @@ export default function LogScreen() {
                   width: i === onboardingIndex ? 25 : 10, 
                   height: 10, 
                   borderRadius: 5, 
-                  backgroundColor: i === onboardingIndex ? '#2d3436' : '#dfe6e9',
-                  transition: 'width 0.3s' 
-                } as any} 
+                  backgroundColor: i === onboardingIndex ? '#2d3436' : '#dfe6e9'
+                }} 
               />
             ))}
           </View>
@@ -856,7 +856,7 @@ const styles = StyleSheet.create({
   },
   activePhaseBadge: {
     backgroundColor: 'rgba(143,216,164,0.1)',
-    borderColor: 'rgba(143,216,164,0.4)',
+    borderWidth: 0,
   },
   timerText: {
     fontSize: 14,
