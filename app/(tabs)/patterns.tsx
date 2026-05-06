@@ -1,5 +1,6 @@
 import { useStore } from '@/store/useStore';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { format, isSameDay, subDays } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -113,7 +114,23 @@ export default function PatternsScreen() {
           })
         )}
 
+        {allSortedTriggers.length > 3 && (
+          <TouchableOpacity 
+            style={styles.expandButton} 
+            onPress={() => setIsExpanded(!isExpanded)}
+          >
+            <Text style={styles.expandButtonText}>
+              {isExpanded ? 'Weniger anzeigen' : `${allSortedTriggers.length - 3} weitere anzeigen`}
+            </Text>
+            {isExpanded ? (
+              <ChevronUp size={16} color="#a4b0be" />
+            ) : (
+              <ChevronDown size={16} color="#a4b0be" />
+            )}
+          </TouchableOpacity>
+        )}
       </View>
+
 
       <View style={[styles.section, { marginTop: 20 }]}>
         <Text style={styles.sectionTitle}>Verlauf (7 Tage)</Text>
@@ -315,6 +332,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#636e72',
   },
+  expandButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    marginTop: 10,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f2f6',
+  },
+  expandButtonText: {
+    fontSize: 14,
+    color: '#a4b0be',
+    fontWeight: '500',
+  },
 });
+
 
 
