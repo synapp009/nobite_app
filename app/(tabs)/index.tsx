@@ -89,6 +89,8 @@ export default function LogScreen() {
   } = useStore();
 
   const [onboardingIndex, setOnboardingIndex] = useState(0);
+  const [listWidth, setListWidth] = useState(screenWidth);
+
   const slides = [
     {
       title: "Willkommen bei NoBite",
@@ -593,13 +595,27 @@ export default function LogScreen() {
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
+          onLayout={(e) => {
+            setListWidth(e.nativeEvent.layout.width);
+          }}
           onScroll={(e) => {
-            const index = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
+            const index = Math.round(e.nativeEvent.contentOffset.x / listWidth);
+            if (index !== onboardingIndex) setOnboardingIndex(index);
+          }}
+          onMomentumScrollEnd={(e) => {
+            const index = Math.round(e.nativeEvent.contentOffset.x / listWidth);
             setOnboardingIndex(index);
           }}
+          getItemLayout={(_, index) => ({
+            length: listWidth,
+            offset: listWidth * index,
+            index,
+          })}
           scrollEventThrottle={16}
+
           renderItem={({ item, index }) => (
-            <View style={{ width: screenWidth, height: screenHeight - 160, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40, paddingBottom: 40 }}>
+            <View style={{ width: listWidth, height: screenHeight - 160, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40, paddingBottom: 40 }}>
+
               {index === 1 ? (
                 <View style={{ marginBottom: 32, alignItems: 'center' }}>
                   {/* Phase 1: Bitten nail - proportionally scaled from main screen */}
