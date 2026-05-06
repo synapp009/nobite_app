@@ -1,6 +1,9 @@
-import { StyleSheet, View, Text, ScrollView } from 'react-native';
-import { useStore, AppEvent } from '@/store/useStore';
+import { useStore } from '@/store/useStore';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { format, subDays, isSameDay } from 'date-fns';
+import { de } from 'date-fns/locale';
+
 
 export default function PatternsScreen() {
   const { events } = useStore();
@@ -11,14 +14,39 @@ export default function PatternsScreen() {
   const replacedPercentage = totalEvents > 0 ? Math.round((replacedEvents / totalEvents) * 100) : 0;
 
   // Calculate top triggers
-  const triggerCounts = events.reduce((acc, event) => {
-    acc[event.trigger] = (acc[event.trigger] || 0) + 1;
+  const triggerStats = events.reduce((acc, event) => {
+    if (!acc[event.trigger]) {
+      acc[event.trigger] = { total: 0, replaced: 0 };
+    }
+    acc[event.trigger].total++;
+    if (event.replaced) acc[event.trigger].replaced++;
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record<string, { total: number; replaced: number }>);
 
-  const sortedTriggers = Object.entries(triggerCounts)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 3); // Top 3
+  const sortedTriggers = Object.entries(triggerStats)
+    .sort(([, a], [, b]) => b.total - a.total)
+    .slice(0, 3);
+
+
+  // Calculate history for last 7 days
+  const last7Days = [...Array(7)].map((_, i) => {
+    const date = subDays(new Date(), i);
+    const dayEvents = events.filter(e => isSameDay(new Date(e.timestamp), date));
+    const replaced = dayEvents.filter(e => e.replaced).length;
+    const total = dayEvents.length;
+    
+    return {
+      date,
+      dayName: i === 0 ? 'Heute' : format(date, 'EEE', { locale: de }),
+      total,
+      replaced,
+      notReplaced: total - replaced
+    };
+  }).reverse();
+
+  const maxCount = Math.max(...last7Days.map(d => d.total), 1);
+
+
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: Math.max(insets.top, 20) + 10 }]}>
@@ -45,19 +73,28 @@ export default function PatternsScreen() {
         {events.length === 0 ? (
           <Text style={styles.emptyText}>Noch keine Daten vorhanden. Logge deinen ersten Moment!</Text>
         ) : (
-          sortedTriggers.map(([trigger, count], index) => {
-            const percentage = Math.round((count / totalEvents) * 100);
+          sortedTriggers.map(([trigger, stats], index) => {
+            const percentageTotal = Math.round((stats.total / totalEvents) * 100);
+            const percentageReplaced = (stats.replaced / stats.total) * 100;
+            const percentageNotReplaced = 100 - percentageReplaced;
+            
             return (
               <View key={trigger} style={styles.triggerRow}>
                 <View style={styles.triggerInfo}>
                   <Text style={styles.triggerName}>{trigger}</Text>
-                  <Text style={styles.triggerCount}>{count}x ({percentage}%)</Text>
+                  <Text style={styles.triggerCount}>{stats.total}x ({percentageTotal}%)</Text>
                 </View>
                 <View style={styles.progressBarBg}>
                   <View 
                     style={[
                       styles.progressBarFill, 
-                      { width: `${percentage}%`, backgroundColor: index === 0 ? '#8fd8a4' : 'rgba(143,216,164,0.35)' }
+                      { width: `${percentageReplaced}%`, backgroundColor: '#8fd8a4' }
+                    ]} 
+                  />
+                  <View 
+                    style={[
+                      styles.progressBarFill, 
+                      { width: `${percentageNotReplaced}%`, backgroundColor: '#fab1a0' }
                     ]} 
                   />
                 </View>
@@ -65,7 +102,49 @@ export default function PatternsScreen() {
             );
           })
         )}
+
       </View>
+
+      <View style={[styles.section, { marginTop: 20 }]}>
+        <Text style={styles.sectionTitle}>Verlauf (7 Tage)</Text>
+        <View style={styles.chartContainer}>
+          {last7Days.map((day, index) => (
+            <View key={index} style={styles.chartBarWrapper}>
+              <View style={styles.chartBarContainer}>
+                <View 
+                  style={[
+                    styles.chartBarOuter, 
+                    { height: `${Math.max((day.total / maxCount) * 100, 2)}%` } // Min 2% height if total > 0
+                  ]}
+                >
+                  {day.total > 0 ? (
+                    <>
+                      <View style={{ height: `${(day.notReplaced / day.total) * 100}%`, backgroundColor: '#fab1a0' }} />
+                      <View style={{ height: `${(day.replaced / day.total) * 100}%`, backgroundColor: '#8fd8a4' }} />
+                    </>
+                  ) : null}
+                </View>
+
+              </View>
+              <Text style={styles.chartLabel}>{day.dayName}</Text>
+              <Text style={styles.chartValue}>{day.total}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.legend}>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: '#8fd8a4' }]} />
+            <Text style={styles.legendText}>Ersetzt</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: '#fab1a0' }]} />
+            <Text style={styles.legendText}>Ignoriert / Kaue</Text>
+          </View>
+        </View>
+
+      </View>
+
     </ScrollView>
   );
 }
@@ -162,9 +241,70 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f2f6',
     borderRadius: 4,
     overflow: 'hidden',
+    flexDirection: 'row',
   },
   progressBarFill: {
     height: '100%',
+  },
+
+  chartContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    height: 150,
+    marginTop: 10,
+  },
+  chartBarWrapper: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  chartBarContainer: {
+    height: 100,
+    width: '100%',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  chartBarOuter: {
+    width: 12,
+    backgroundColor: '#f1f2f6',
+    borderRadius: 6,
+    overflow: 'hidden',
+    flexDirection: 'column',
+  },
+
+
+  chartLabel: {
+    fontSize: 10,
+    color: '#a4b0be',
+    marginBottom: 2,
+  },
+
+  chartValue: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#2d3436',
+  },
+  legend: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 20,
+    marginTop: 20,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
     borderRadius: 4,
   },
+  legendText: {
+    fontSize: 12,
+    color: '#636e72',
+  },
 });
+
+
