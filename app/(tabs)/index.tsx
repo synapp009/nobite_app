@@ -204,15 +204,22 @@ export default function LogScreen() {
 
   const handleSaveForcedReplacement = (action: string) => {
     if (pendingReplacement) {
-      setReplacement(pendingReplacement.trigger, action);
-      setIntervention({
-        trigger: pendingReplacement.trigger,
-        action: action,
-        eventId: pendingReplacement.eventId
-      });
+      const { trigger, eventId } = pendingReplacement;
+      setReplacement(trigger, action);
       setPendingReplacement(null);
+      
+      // Wait a bit to ensure states are updated correctly
+      setTimeout(() => {
+        setIntervention({
+          trigger,
+          action,
+          eventId
+        });
+      }, 0);
     }
   };
+
+
 
   const [batchInput, setBatchInput] = useState('');
   const currentBatchTrigger = triggersToFix[0];
@@ -260,7 +267,8 @@ export default function LogScreen() {
       )}
 
       {/* 0.5 Batch Setup UI (Global Popup) */}
-      {showBatchSetup && (
+      {showBatchSetup && !pendingReplacement && !intervention && !showTriggers && !showSuccess && (
+
         <View style={[styles.content, styles.batchOverlay]}>
           <View style={styles.batchCard}>
             <Text style={styles.modalTitle}>Setze deine Strategien</Text>
@@ -316,31 +324,52 @@ export default function LogScreen() {
 
       {/* 1.5 Forced Replacement UI */}
       {!!pendingReplacement && (
-        <View style={[styles.content, { padding: 20 }]}>
-          <Text style={styles.modalTitle}>Ausgleichshandlung festlegen</Text>
-          <Text style={{ textAlign: 'center', marginBottom: 20, color: '#636e72' }}>
-            Was möchtest du stattdessen tun, wenn du <Text style={{ fontWeight: 'bold' }}>{pendingReplacement.trigger}</Text> spürst?
-          </Text>
+        <View style={[styles.content, styles.batchOverlay]}>
+          <View style={styles.batchCard}>
+            <Text style={styles.modalTitle}>Setze deine Strategie</Text>
+            <Text style={styles.batchSubtitle}>
+              Lege für dein neues Muster direkt eine Ersatzhandlung fest.
+            </Text>
 
-          <TextInput
-            style={styles.customInput}
-            placeholder="z.B. Faust ballen, tief atmen..."
-            autoFocus
-            onSubmitEditing={(e) => {
-              if (e.nativeEvent.text.trim()) {
-                handleSaveForcedReplacement(e.nativeEvent.text.trim());
-              }
-            }}
-          />
+            <View style={styles.batchItem}>
+              <Text style={styles.batchTriggerLabel}>
+                Wenn ich <Text style={{ fontWeight: 'bold' }}>{pendingReplacement.trigger}</Text> fühle...
+              </Text>
+              
+              <TextInput
+                style={styles.customInput}
+                placeholder="Meine Ersatzhandlung..."
+                value={batchInput}
+                onChangeText={setBatchInput}
+                autoFocus
+                onSubmitEditing={() => {
+                  if (batchInput.trim()) {
+                    handleSaveForcedReplacement(batchInput.trim());
+                    setBatchInput('');
+                  }
+                }}
+              />
 
-          <Text style={{ marginTop: 10, fontSize: 12, color: '#a4b0be', textAlign: 'center' }}>
-            Du musst eine Handlung festlegen, um fortzufahren.
-          </Text>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.actionButtonSuccess, { marginTop: 15 }]}
+                onPress={() => {
+                  if (batchInput.trim()) {
+                    handleSaveForcedReplacement(batchInput.trim());
+                    setBatchInput('');
+                  }
+                }}
+              >
+                <Text style={styles.actionButtonText}>Speichern & Weiter</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       )}
 
+
       {/* 2. Trigger Selection UI */}
-      {!intervention && showTriggers && (
+      {!intervention && showTriggers && !pendingReplacement && !showBatchSetup && (
+
         <View style={[styles.content, { padding: 20, justifyContent: 'center' }]}>
           <Text style={styles.modalTitle}>Warum?</Text>
           <View style={{ width: '100%', maxWidth: 400 }}>
@@ -421,7 +450,8 @@ export default function LogScreen() {
       )}
 
       {/* 3. Main Button UI */}
-      {!intervention && !showTriggers && !showSuccess && (
+      {!intervention && !showTriggers && !showSuccess && !pendingReplacement && !showBatchSetup && (
+
         <View style={[styles.content, { justifyContent: 'flex-end', paddingBottom: 0 }]}>
           {Platform.OS === 'web' ? (
             <div style={{
