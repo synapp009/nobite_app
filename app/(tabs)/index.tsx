@@ -1,9 +1,9 @@
 import { Trigger, useStore } from '@/store/useStore';
 import { Check, Plus, X } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Animated, TouchableOpacity, Platform, Dimensions, TextInput, TouchableWithoutFeedback, Keyboard, FlatList } from 'react-native';
-import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Animated, Dimensions, FlatList, Keyboard, Platform, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -19,23 +19,23 @@ const BittenNail = ({ width, height, pulseAnim }: { width: number, height: numbe
             <Stop offset="1" stopColor="#f3ccc3" />
           </LinearGradient>
         </Defs>
-        <Path 
-          d="M 0 30 L 12 27 L 22 32 L 32 25 L 42 33 L 55 28 L 68 35 L 78 27 L 88 32 L 100 28 L 100 95 C 100 120 80 130 50 130 C 20 130 0 120 0 95 Z" 
-          fill="white" 
+        <Path
+          d="M 0 30 L 12 27 L 22 32 L 32 25 L 42 33 L 55 28 L 68 35 L 78 27 L 88 32 L 100 28 L 100 95 C 100 120 80 130 50 130 C 20 130 0 120 0 95 Z"
+          fill="white"
         />
-        <Path 
-          d="M 4 38 L 14 35 L 24 40 L 34 33 L 44 41 L 56 35 L 68 42 L 78 34 L 88 39 L 96 38 L 96 95 C 96 115 75 125 50 125 C 25 125 4 115 4 95 Z" 
-          fill="url(#nailGrad)" 
+        <Path
+          d="M 4 38 L 14 35 L 24 40 L 34 33 L 44 41 L 56 35 L 68 42 L 78 34 L 88 39 L 96 38 L 96 95 C 96 115 75 125 50 125 C 25 125 4 115 4 95 Z"
+          fill="url(#nailGrad)"
         />
-        <Path 
-          d="M 30 130 C 30 110 70 110 70 130 Z" 
-          fill="rgba(255, 255, 255, 0.7)" 
+        <Path
+          d="M 30 130 C 30 110 70 110 70 130 Z"
+          fill="rgba(255, 255, 255, 0.7)"
         />
-        <Path 
-          d="M 0 30 L 12 27 L 22 32 L 32 25 L 42 33 L 55 28 L 68 35 L 78 27 L 88 32 L 100 28" 
-          fill="none" 
-          stroke="#ff7675" 
-          strokeWidth="1.5" 
+        <Path
+          d="M 0 30 L 12 27 L 22 32 L 32 25 L 42 33 L 55 28 L 68 35 L 78 27 L 88 32 L 100 28"
+          fill="none"
+          stroke="#ff7675"
+          strokeWidth="1.5"
           opacity="0.6"
         />
         <Path d="M 22 32 L 24 34" stroke="#d63031" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
@@ -55,6 +55,7 @@ export default function LogScreen() {
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const flatListRef = useRef<any>(null);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     Animated.loop(
@@ -73,13 +74,13 @@ export default function LogScreen() {
     ).start();
   }, []);
 
-  const { 
-    events, 
-    logEvent, 
-    firstLaunchAt, 
-    initFirstLaunch, 
-    replacements, 
-    setReplacement, 
+  const {
+    events,
+    logEvent,
+    firstLaunchAt,
+    initFirstLaunch,
+    replacements,
+    setReplacement,
     debugSetFirstLaunch,
     hasCompletedOnboarding,
     setHasCompletedOnboarding,
@@ -92,19 +93,19 @@ export default function LogScreen() {
     {
       title: "Willkommen bei NoBite",
       description: "Der erste Schritt in ein Leben ohne Nägelkauen beginnt heute. Wir begleiten dich mit wissenschaftlich fundierten Methoden.",
-      icon: "✨",
+      icon: "",
       color: "#a48fd8"
     },
     {
       title: "Phase 1: Beobachten",
       description: "In den ersten 7 Tagen lernst du deine Auslöser kennen. Tippe auf den Nagel, jedes Mal wenn du den Drang spürst.",
-      icon: "🔍",
+      icon: "",
       color: "#00b894"
     },
     {
       title: "Phase 2: Verändern",
       description: "Nach der Beobachtung helfen wir dir, das Kauen durch gesunde Ersatzhandlungen zu ersetzen. Gemeinsam schaffen wir das!",
-      icon: "🚀",
+      icon: "",
       color: "#e17055"
     }
   ];
@@ -222,24 +223,27 @@ export default function LogScreen() {
   };
 
   const content = (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* 0. Timer / Status UI - Only show on main screen */}
       {!intervention && !showTriggers && !pendingReplacement && !showBatchSetup && !showSuccess && (
         <View style={styles.statusContainer}>
           {isObservationPhase ? (
             <View style={styles.timerBadge}>
               <Text style={styles.timerText}>
-                <Text style={{ fontSize: 16 }}>⏱️</Text> Noch <Text style={{ fontWeight: '800', color: '#6c5ce7' }}>{daysRemaining} Tage</Text> Beobachtung
+                Noch <Text style={{ fontWeight: '800', color: '#6c5ce7' }}>{daysRemaining} Tage</Text> Beobachtung
               </Text>
             </View>
           ) : (
             <View style={[styles.timerBadge, styles.activePhaseBadge]}>
-              <Text style={[styles.timerText, { color: '#8fd8a4' }]}>
-                <Text style={{ fontSize: 16 }}>🚀</Text> <Text style={{ fontWeight: '800' }}>Intervention aktiv</Text>
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#8fd8a4', shadowColor: '#8fd8a4', shadowOpacity: 0.8, shadowRadius: 4, shadowOffset: { width: 0, height: 0 } }} />
+                <Text style={styles.timerText}>
+                  <Text style={{ fontWeight: '800', color: '#2d3436' }}>Intervention aktiv</Text>
+                </Text>
+              </View>
             </View>
           )}
-          
+
           {/* Subtle Debug Controls */}
           <View style={styles.debugContainer}>
             <TouchableOpacity onPress={() => debugSetFirstLaunch(Date.now() - 8 * 24 * 60 * 60 * 1000)}>
@@ -286,7 +290,7 @@ export default function LogScreen() {
       {!!intervention && (
         <View style={[styles.content, { padding: 20 }]}>
           <Text style={styles.interventionTitle}>Statt Nägelkauen ({intervention.trigger}):</Text>
-          <Text style={styles.interventionAction}>👉 {intervention.action}</Text>
+          <Text style={styles.interventionAction}>{intervention.action}</Text>
 
           <View style={styles.interventionActions}>
             <Pressable
@@ -509,20 +513,20 @@ export default function LogScreen() {
                     color: '#2d3436',
                     textShadow: '0 1px 2px rgba(255,255,255,0.8)'
                   }}>
-                    <span style={{ 
-                      fontSize: '14px', 
-                      textTransform: 'uppercase', 
-                      letterSpacing: '2px', 
+                    <span style={{
+                      fontSize: '14px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '2px',
                       fontWeight: '600',
                       marginBottom: '4px',
                       opacity: 0.7
                     }}>{isObservationPhase ? 'Ich kaue' : 'Ich möchte'}</span>
-                    <span style={{ 
-                      fontSize: '28px', 
-                      fontWeight: '900', 
+                    <span style={{
+                      fontSize: '28px',
+                      fontWeight: '900',
                       textAlign: 'center',
                       lineHeight: '1.1'
-                    }}>{isObservationPhase ? <><br/>GERADE NÄGEL</> : <><br/>NÄGEL KAUEN</>}</span>
+                    }}>{isObservationPhase ? <><br />GERADE NÄGEL</> : <><br />NÄGEL KAUEN</>}</span>
                   </div>
                 </div>
               </button>
@@ -581,7 +585,7 @@ export default function LogScreen() {
 
   if (!hasCompletedOnboarding) {
     return (
-      <View style={[styles.container, { backgroundColor: 'white' }]}>
+      <View style={[styles.container, { backgroundColor: 'white', paddingTop: insets.top }]}>
         <FlatList
           ref={flatListRef}
           style={{ flex: 1 }}
@@ -655,13 +659,11 @@ export default function LogScreen() {
                     </View>
                     {/* Cuticle */}
                     <View style={{ position: 'absolute', bottom: 0, width: '100%', height: 65, backgroundColor: '#d8a48f', borderTopLeftRadius: 55, borderTopRightRadius: 55, borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.1)', zIndex: 2 }} />
-                    {/* Sparkles */}
-                    <Animated.Text style={{ position: 'absolute', top: 10, left: 10, fontSize: 24, opacity: pulseAnim, transform: [{scale: pulseAnim}] }}>✨</Animated.Text>
-                    <Animated.Text style={{ position: 'absolute', top: 30, right: 5, fontSize: 20, opacity: pulseAnim, transform: [{scale: pulseAnim}] }}>✨</Animated.Text>
+                    {/* Sparkles removed */}
                   </View>
                 </View>
               ) : (
-                <Text style={{ fontSize: 80, marginBottom: 32 }}>{item.icon}</Text>
+                item.icon ? <Text style={{ fontSize: 80, marginBottom: 32 }}>{item.icon}</Text> : null
               )}
               <Text style={[styles.modalTitle, { fontSize: 28, marginBottom: 16, textAlign: 'center' }]}>{item.title}</Text>
               <Text style={{ fontSize: 17, textAlign: 'center', color: '#636e72', lineHeight: 26 }}>{item.description}</Text>
@@ -672,19 +674,19 @@ export default function LogScreen() {
         <View style={{ position: 'absolute', bottom: 50, left: 0, right: 0, alignItems: 'center' }}>
           <View style={{ flexDirection: 'row', gap: 10, marginBottom: 30 }}>
             {slides.map((_, i) => (
-              <View 
-                key={i} 
-                style={{ 
-                  width: i === onboardingIndex ? 25 : 10, 
-                  height: 10, 
-                  borderRadius: 5, 
+              <View
+                key={i}
+                style={{
+                  width: i === onboardingIndex ? 25 : 10,
+                  height: 10,
+                  borderRadius: 5,
                   backgroundColor: i === onboardingIndex ? '#2d3436' : '#dfe6e9'
-                }} 
+                }}
               />
             ))}
           </View>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[styles.actionButton, styles.actionButtonSuccess, { width: screenWidth - 80, height: 60 }]}
             onPress={() => {
               if (onboardingIndex < slides.length - 1) {
@@ -695,7 +697,7 @@ export default function LogScreen() {
             }}
           >
             <Text style={[styles.actionButtonText, { fontSize: 18 }]}>
-              {onboardingIndex === slides.length - 1 ? 'Loslegen 🚀' : 'Weiter'}
+              {onboardingIndex === slides.length - 1 ? 'Loslegen' : 'Weiter'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -833,7 +835,7 @@ const styles = StyleSheet.create({
   },
   statusContainer: {
     position: 'absolute',
-    top: 60,
+    top: 110,
     left: 0,
     right: 0,
     alignItems: 'center',
@@ -855,8 +857,9 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0,0,0,0.02)',
   },
   activePhaseBadge: {
-    backgroundColor: 'rgba(143,216,164,0.1)',
-    borderWidth: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderWidth: 1,
+    borderColor: 'rgba(143,216,164,0.3)',
   },
   timerText: {
     fontSize: 14,

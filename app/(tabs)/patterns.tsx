@@ -1,8 +1,10 @@
 import { StyleSheet, View, Text, ScrollView } from 'react-native';
 import { useStore, AppEvent } from '@/store/useStore';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function PatternsScreen() {
   const { events } = useStore();
+  const insets = useSafeAreaInsets();
 
   const totalEvents = events.length;
   const replacedEvents = events.filter(e => e.replaced).length;
@@ -19,7 +21,7 @@ export default function PatternsScreen() {
     .slice(0, 3); // Top 3
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: Math.max(insets.top, 20) + 10 }]}>
       <View style={styles.header}>
         <Text style={styles.title}>Deine Muster</Text>
         <Text style={styles.subtitle}>

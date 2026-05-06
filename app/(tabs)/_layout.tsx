@@ -8,7 +8,6 @@ import { useStore } from '@/store/useStore';
 function AppHeader({ title }: { title: string }) {
   return (
     <View style={headerStyles.container}>
-      <View style={headerStyles.dot} />
       <Text style={headerStyles.title}>{title}</Text>
     </View>
   );
@@ -20,12 +19,7 @@ const headerStyles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#8fd8a4',
-  },
+
   title: {
     fontSize: 17,
     fontWeight: '700',
@@ -55,7 +49,7 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: tintColor,
         tabBarInactiveTintColor: '#c4cdd4',
-        headerShown: true,
+        headerShown: false,
         headerTintColor: tintColor,
         headerStyle: {
           backgroundColor: '#ffffff',

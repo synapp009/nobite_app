@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore, Trigger } from '@/store/useStore';
 import { Plus, Check } from 'lucide-react-native';
 
@@ -7,6 +8,7 @@ const DEFAULT_TRIGGERS: Trigger[] = ['Stress', 'Langeweile', 'Grübeln', 'Müdig
 
 export default function ReplacementsScreen() {
   const { replacements, setReplacement, events } = useStore();
+  const insets = useSafeAreaInsets();
   const [editingTrigger, setEditingTrigger] = useState<Trigger | null>(null);
   const [inputValue, setInputValue] = useState('');
 
@@ -30,7 +32,7 @@ export default function ReplacementsScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={90}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: Math.max(insets.top, 20) + 10 }]}>
         <View style={styles.header}>
           <Text style={styles.title}>Ersatzhandlungen</Text>
           <Text style={styles.subtitle}>
