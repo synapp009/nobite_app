@@ -22,6 +22,8 @@ export interface AppState {
   replacements: Replacement[];
   firstLaunchAt: number | null;
   hasCompletedOnboarding: boolean;
+  darkMode: boolean;
+  useSystemTheme: boolean;
   initFirstLaunch: () => void;
   logEvent: (trigger: Trigger, intensity?: number) => string;
   markAsReplaced: (eventId: string) => void;
@@ -29,6 +31,8 @@ export interface AppState {
   setHasCompletedOnboarding: (status: boolean) => void;
   debugSetFirstLaunch: (timestamp: number) => void;
   resetStore: () => Promise<void>;
+  setDarkMode: (enabled: boolean) => void;
+  setUseSystemTheme: (enabled: boolean) => void;
 }
 
 const StoreContext = createContext<AppState | null>(null);
@@ -38,6 +42,8 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   const [replacements, setReplacements] = useState<Replacement[]>([]);
   const [firstLaunchAt, setFirstLaunchAt] = useState<number | null>(null);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+  const [darkMode, setDarkModeState] = useState(false);
+  const [useSystemTheme, setUseSystemThemeState] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -50,6 +56,8 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
           setReplacements(parsed.replacements || []);
           setFirstLaunchAt(parsed.firstLaunchAt || null);
           setHasCompletedOnboarding(parsed.hasCompletedOnboarding || false);
+          setDarkModeState(parsed.darkMode || false);
+          setUseSystemThemeState(parsed.useSystemTheme !== undefined ? parsed.useSystemTheme : true);
         }
       } catch (e) {
         console.error('Failed to load state', e);
@@ -62,9 +70,11 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (isLoaded) {
-      AsyncStorage.setItem('nobite-storage', JSON.stringify({ events, replacements, firstLaunchAt, hasCompletedOnboarding }));
+      AsyncStorage.setItem('nobite-storage', JSON.stringify({
+        events, replacements, firstLaunchAt, hasCompletedOnboarding, darkMode, useSystemTheme
+      }));
     }
-  }, [events, replacements, firstLaunchAt, hasCompletedOnboarding, isLoaded]);
+  }, [events, replacements, firstLaunchAt, hasCompletedOnboarding, darkMode, useSystemTheme, isLoaded]);
 
   const initFirstLaunch = () => {
     if (!firstLaunchAt) {
@@ -115,6 +125,9 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const setDarkMode = (enabled: boolean) => setDarkModeState(enabled);
+  const setUseSystemTheme = (enabled: boolean) => setUseSystemThemeState(enabled);
+
   if (!isLoaded) return null;
 
   return (
@@ -123,13 +136,17 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       replacements, 
       firstLaunchAt, 
       hasCompletedOnboarding,
+      darkMode,
+      useSystemTheme,
       initFirstLaunch, 
       logEvent, 
       markAsReplaced, 
       setReplacement, 
       setHasCompletedOnboarding,
       debugSetFirstLaunch,
-      resetStore
+      resetStore,
+      setDarkMode,
+      setUseSystemTheme,
     }}>
       {children}
     </StoreContext.Provider>

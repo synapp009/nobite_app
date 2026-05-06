@@ -1,3 +1,4 @@
+import { useTheme } from '@/hooks/useTheme';
 import { Trigger, useStore } from '@/store/useStore';
 import { Check, Plus, X } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
@@ -56,6 +57,7 @@ export default function LogScreen() {
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const flatListRef = useRef<any>(null);
   const insets = useSafeAreaInsets();
+  const t = useTheme();
 
   useEffect(() => {
     Animated.loop(
@@ -207,7 +209,7 @@ export default function LogScreen() {
       const { trigger, eventId } = pendingReplacement;
       setReplacement(trigger, action);
       setPendingReplacement(null);
-      
+
       // Wait a bit to ensure states are updated correctly
       setTimeout(() => {
         setIntervention({
@@ -232,22 +234,22 @@ export default function LogScreen() {
   };
 
   const content = (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.bg }]}>
       {/* 0. Timer / Status UI - Only show on main screen */}
       {!intervention && !showTriggers && !pendingReplacement && !showBatchSetup && !showSuccess && (
         <View style={styles.statusContainer}>
           {isObservationPhase ? (
-            <View style={styles.timerBadge}>
-              <Text style={styles.timerText}>
+            <View style={[styles.timerBadge, { backgroundColor: t.bgCard }]}>
+              <Text style={[styles.timerText, { color: t.text }]}>
                 Noch <Text style={{ fontWeight: '800', color: '#6c5ce7' }}>{daysRemaining} Tage</Text> Beobachtung
               </Text>
             </View>
           ) : (
-            <View style={[styles.timerBadge, styles.activePhaseBadge]}>
+            <View style={[styles.timerBadge, styles.activePhaseBadge, { backgroundColor: t.bgCard }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#8fd8a4', shadowColor: '#8fd8a4', shadowOpacity: 0.8, shadowRadius: 4, shadowOffset: { width: 0, height: 0 } }} />
-                <Text style={styles.timerText}>
-                  <Text style={{ fontWeight: '800', color: '#2d3436' }}>Intervention aktiv</Text>
+                <Text style={[styles.timerText, { color: t.text }]}>
+                  <Text style={{ fontWeight: '800', color: t.text }}>Intervention aktiv</Text>
                 </Text>
               </View>
             </View>
@@ -269,16 +271,16 @@ export default function LogScreen() {
       {/* 0.5 Batch Setup UI (Global Popup) */}
       {showBatchSetup && !pendingReplacement && !intervention && !showTriggers && !showSuccess && (
 
-        <View style={[styles.content, styles.batchOverlay]}>
-          <View style={styles.batchCard}>
-            <Text style={styles.modalTitle}>Setze deine Strategien</Text>
+        <View style={[styles.content, styles.batchOverlay, { backgroundColor: t.isDark ? 'rgba(17,20,24,0.98)' : 'rgba(245,247,250,0.98)' }]}>
+          <View style={[styles.batchCard, { backgroundColor: t.bgCard }]}>
+            <Text style={[styles.modalTitle, { color: t.text }]}>Setze deine Strategien</Text>
             <Text style={styles.batchSubtitle}>
               Die Beobachtung ist vorbei! Lege für jedes Muster eine Ersatzhandlung fest.
               ({triggersToFix.length} verbleibend)
             </Text>
 
             <View style={styles.batchItem}>
-              <Text style={styles.batchTriggerLabel}>Wenn ich <Text style={{ fontWeight: 'bold' }}>{currentBatchTrigger}</Text> fühle...</Text>
+              <Text style={[styles.batchTriggerLabel, { color: t.textSub }]}>Wenn ich <Text style={{ fontWeight: 'bold', color: t.text }}>{currentBatchTrigger}</Text> fühle...</Text>
               <TextInput
                 style={styles.customInput}
                 placeholder="Meine Ersatzhandlung..."
@@ -298,8 +300,9 @@ export default function LogScreen() {
       )}
       {/* 1. Intervention UI */}
       {!!intervention && (
-        <View style={[styles.content, { padding: 20 }]}>
-          <Text style={styles.interventionTitle}>Statt Nägelkauen ({intervention.trigger}):</Text>
+
+        <View style={[styles.content, { padding: 20, backgroundColor: t.bg }]}>
+          <Text style={[styles.interventionTitle, { color: t.textSub }]}>Statt Nägelkauen ({intervention.trigger}):</Text>
           <Text style={styles.interventionAction}>{intervention.action}</Text>
 
           <View style={styles.interventionActions}>
@@ -324,21 +327,22 @@ export default function LogScreen() {
 
       {/* 1.5 Forced Replacement UI */}
       {!!pendingReplacement && (
-        <View style={[styles.content, styles.batchOverlay]}>
+        <View style={[styles.content, styles.batchOverlay, { backgroundColor: t.isDark ? 'rgba(17,20,24,0.98)' : 'rgba(245,247,250,0.98)' }]}>
           <View style={styles.batchCard}>
-            <Text style={styles.modalTitle}>Setze deine Strategie</Text>
-            <Text style={styles.batchSubtitle}>
+            <Text style={[styles.modalTitle, { color: t.text }]}>Setze deine Strategie</Text>
+            <Text style={[styles.batchSubtitle, { color: t.textSub }]}>
               Lege für dein neues Muster direkt eine Ersatzhandlung fest.
             </Text>
 
             <View style={styles.batchItem}>
-              <Text style={styles.batchTriggerLabel}>
-                Wenn ich <Text style={{ fontWeight: 'bold' }}>{pendingReplacement.trigger}</Text> fühle...
+              <Text style={[styles.batchTriggerLabel, { color: t.textSub }]}>
+                Wenn ich <Text style={{ fontWeight: 'bold', color: t.text }}>{pendingReplacement.trigger}</Text> fühle...
               </Text>
-              
+
               <TextInput
-                style={styles.customInput}
+                style={[styles.customInput, { backgroundColor: t.bgInput, color: t.text }]}
                 placeholder="Meine Ersatzhandlung..."
+                placeholderTextColor={t.textMuted}
                 value={batchInput}
                 onChangeText={setBatchInput}
                 autoFocus
@@ -370,18 +374,18 @@ export default function LogScreen() {
       {/* 2. Trigger Selection UI */}
       {!intervention && showTriggers && !pendingReplacement && !showBatchSetup && (
 
-        <View style={[styles.content, { padding: 20, justifyContent: 'center' }]}>
-          <Text style={styles.modalTitle}>Warum?</Text>
+        <View style={[styles.content, { padding: 20, justifyContent: 'center', backgroundColor: t.bg }]}>
+          <Text style={[styles.modalTitle, { color: t.text }]}>Warum?</Text>
           <View style={{ width: '100%', maxWidth: 400 }}>
             {!isCustomTrigger ? (
               <>
-                {allTriggers.map(t => (
+                {allTriggers.map(trigger => (
                   <Pressable
-                    key={t}
-                    style={({ pressed }) => [styles.triggerButton, pressed && { opacity: 0.8 }]}
-                    onPress={() => handleTriggerSelect(t)}
+                    key={trigger}
+                    style={({ pressed }) => [styles.triggerButton, { backgroundColor: t.bgSubtle }, pressed && { opacity: 0.8 }]}
+                    onPress={() => handleTriggerSelect(trigger)}
                   >
-                    <Text style={styles.triggerText}>{t}</Text>
+                    <Text style={[styles.triggerText, { color: t.text }]}>{trigger}</Text>
                   </Pressable>
                 ))}
 
@@ -405,8 +409,9 @@ export default function LogScreen() {
             ) : (
               <View>
                 <TextInput
-                  style={styles.customInput}
+                  style={[styles.customInput, { backgroundColor: t.bgInput, color: t.text }]}
                   placeholder="Dein eigener Grund..."
+                  placeholderTextColor={t.textMuted}
                   value={customTriggerText}
                   onChangeText={setCustomTriggerText}
                   autoFocus
@@ -589,8 +594,8 @@ export default function LogScreen() {
                   <View style={styles.lunula} />
                   <View style={styles.nailTexture} />
                   <View style={styles.textContainer}>
-                    <Text style={styles.subText}>{isObservationPhase ? 'ICH KAUE' : 'ICH MÖCHTE'}</Text>
-                    <Text style={styles.mainText}>{isObservationPhase ? 'GERADE\nNÄGEL' : 'NÄGEL\nKAUEN'}</Text>
+                    <Text style={[styles.subText, { color: t.textSub }]}>{isObservationPhase ? 'ICH KAUE' : 'ICH MÖCHTE'}</Text>
+                    <Text style={[styles.mainText, { color: t.text }]}>{isObservationPhase ? 'GERADE\nNÄGEL' : 'NÄGEL\nKAUEN'}</Text>
                   </View>
                 </View>
               </Pressable>
@@ -607,8 +612,8 @@ export default function LogScreen() {
             <View style={{ backgroundColor: '#8fd8a4', padding: 30, borderRadius: 100, marginBottom: 20 }}>
               <Check color="white" size={60} />
             </View>
-            <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#2d3436' }}>Gespeichert!</Text>
-            <Text style={{ fontSize: 16, color: '#636e72', marginTop: 10 }}>Grund erfolgreich erfasst.</Text>
+            <Text style={{ fontSize: 28, fontWeight: 'bold', color: t.text }}>Gespeichert!</Text>
+            <Text style={{ fontSize: 16, color: t.textSub, marginTop: 10 }}>Grund erfolgreich erfasst.</Text>
           </Animated.View>
         </View>
       )}
@@ -617,7 +622,7 @@ export default function LogScreen() {
 
   if (!hasCompletedOnboarding) {
     return (
-      <View style={[styles.container, { backgroundColor: 'white', paddingTop: insets.top }]}>
+      <View style={[styles.container, { backgroundColor: t.bg, paddingTop: insets.top }]}>
         <FlatList
           ref={flatListRef}
           style={{ flex: 1 }}
@@ -765,7 +770,6 @@ export default function LogScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f7fa',
   },
   absoluteOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -937,7 +941,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(245, 247, 250, 0.98)',
     zIndex: 2000,
     justifyContent: 'center',
     padding: 20,

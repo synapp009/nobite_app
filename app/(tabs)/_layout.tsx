@@ -1,34 +1,30 @@
 import { Tabs } from 'expo-router';
-import { ShieldAlert, BarChart3, Settings2 } from 'lucide-react-native';
-import { useEffect } from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import { ShieldAlert, BarChart3, Settings2, Settings } from 'lucide-react-native';
+import { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Platform, TouchableOpacity } from 'react-native';
 import { useStore } from '@/store/useStore';
+import { SettingsModal } from '@/components/SettingsModal';
+import { useTheme } from '@/hooks/useTheme';
 
-// Custom header title component
-function AppHeader({ title }: { title: string }) {
+function SettingsButton() {
+  const [visible, setVisible] = useState(false);
+  const t = useTheme();
   return (
-    <View style={headerStyles.container}>
-      <Text style={headerStyles.title}>{title}</Text>
-    </View>
+    <>
+      <TouchableOpacity
+        onPress={() => setVisible(true)}
+        style={{ marginRight: 16, padding: 4 }}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      >
+        <Settings size={22} color={t.textSub} />
+      </TouchableOpacity>
+      <SettingsModal visible={visible} onClose={() => setVisible(false)} />
+    </>
   );
 }
 
-const headerStyles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-
-  title: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#2d3436',
-    letterSpacing: 0.3,
-  },
-});
-
 export default function TabLayout() {
+  const t = useTheme();
   const tintColor = '#8fd8a4';
   const { initFirstLaunch, firstLaunchAt, hasCompletedOnboarding } = useStore();
 
@@ -48,34 +44,38 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: tintColor,
-        tabBarInactiveTintColor: '#c4cdd4',
-        headerShown: false,
+        tabBarInactiveTintColor: t.isDark ? '#4a5568' : '#c4cdd4',
+        headerShown: true,
         headerTintColor: tintColor,
         headerStyle: {
-          backgroundColor: '#ffffff',
-          // Shadow for floating effect
+          backgroundColor: t.header,
           ...Platform.select({
             ios: {
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.06,
+              shadowOpacity: t.isDark ? 0.3 : 0.06,
               shadowRadius: 8,
             },
             android: { elevation: 3 },
             default: {},
           }),
         },
-        // Remove the default bottom border line
         headerShadowVisible: false,
+        headerTitleStyle: {
+          fontWeight: '700',
+          fontSize: 17,
+          letterSpacing: 0.3,
+          color: t.text,
+        },
+        headerRight: () => <SettingsButton />,
         tabBarStyle: {
-          backgroundColor: '#ffffff',
+          backgroundColor: t.tabBar,
           borderTopWidth: 0,
-          // Soft shadow on tab bar instead of a hard border
           ...Platform.select({
             ios: {
               shadowColor: '#000',
               shadowOffset: { width: 0, height: -2 },
-              shadowOpacity: 0.05,
+              shadowOpacity: t.isDark ? 0.4 : 0.05,
               shadowRadius: 12,
             },
             android: { elevation: 8 },
@@ -90,17 +90,11 @@ export default function TabLayout() {
           fontWeight: '600',
           letterSpacing: 0.2,
         },
-        headerTitleStyle: {
-          fontWeight: '700',
-          fontSize: 17,
-          letterSpacing: 0.3,
-          color: '#2d3436',
-        },
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          headerTitle: () => <AppHeader title="NoBite" />,
+          headerTitle: 'NoBite',
           tabBarLabel: 'Log',
           tabBarIcon: ({ color, size }) => <ShieldAlert size={size} color={color} />,
           ...hiddenDuringOnboarding,
@@ -109,7 +103,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="patterns"
         options={{
-          headerTitle: () => <AppHeader title="Muster" />,
+          headerTitle: 'Muster',
           tabBarLabel: 'Muster',
           tabBarIcon: ({ color, size }) => <BarChart3 size={size} color={color} />,
         }}
@@ -117,7 +111,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="replacements"
         options={{
-          headerTitle: () => <AppHeader title="Strategien" />,
+          headerTitle: 'Strategien',
           tabBarLabel: 'Strategien',
           tabBarIcon: ({ color, size }) => <Settings2 size={size} color={color} />,
         }}
