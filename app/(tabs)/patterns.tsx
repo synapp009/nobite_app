@@ -94,7 +94,12 @@ export default function PatternsScreen() {
                   <Text style={styles.triggerName}>{trigger}</Text>
                   <Text style={styles.triggerCount}>{stats.total}x ({percentageTotal}%)</Text>
                 </View>
-                <View style={[styles.progressBarBg, { width: `${(stats.total / maxTriggerCount) * 100}%` }]}>
+                <View style={[
+                  styles.progressBarBg, 
+                  { 
+                    width: `${(Math.log(stats.total + 1) / Math.log(maxTriggerCount + 1)) * 100}%` 
+                  }
+                ]}>
                   <View 
                     style={[
                       styles.progressBarFill, 
@@ -108,6 +113,7 @@ export default function PatternsScreen() {
                     ]} 
                   />
                 </View>
+
 
               </View>
             );
