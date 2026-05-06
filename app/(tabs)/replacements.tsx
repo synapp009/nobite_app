@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useStore, Trigger } from '@/store/useStore';
-import { Plus, Check } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { Trigger, useStore } from '@/store/useStore';
+import { Check, Plus } from 'lucide-react-native';
+import { useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const DEFAULT_TRIGGERS: Trigger[] = ['Stress', 'Langeweile', 'Grübeln', 'Müdigkeit'];
 
