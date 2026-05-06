@@ -1,13 +1,17 @@
 import { useStore } from '@/store/useStore';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { format, subDays, isSameDay } from 'date-fns';
+import { format, isSameDay, subDays } from 'date-fns';
 import { de } from 'date-fns/locale';
+import { ChevronDown, ChevronUp } from 'lucide-react-native';
+import { useState } from 'react';
 
 
 export default function PatternsScreen() {
   const { events } = useStore();
   const insets = useSafeAreaInsets();
+  const [isExpanded, setIsExpanded] = useState(false);
+
 
   const totalEvents = events.length;
   const replacedEvents = events.filter(e => e.replaced).length;
@@ -23,9 +27,14 @@ export default function PatternsScreen() {
     return acc;
   }, {} as Record<string, { total: number; replaced: number }>);
 
-  const sortedTriggers = Object.entries(triggerStats)
-    .sort(([, a], [, b]) => b.total - a.total)
-    .slice(0, 3);
+  const allSortedTriggers = Object.entries(triggerStats)
+    .sort(([, a], [, b]) => b.total - a.total);
+
+  const sortedTriggers = isExpanded ? allSortedTriggers : allSortedTriggers.slice(0, 3);
+
+  const maxTriggerCount = Math.max(...allSortedTriggers.map(([, s]) => s.total), 1);
+
+
 
 
   // Calculate history for last 7 days
@@ -84,7 +93,7 @@ export default function PatternsScreen() {
                   <Text style={styles.triggerName}>{trigger}</Text>
                   <Text style={styles.triggerCount}>{stats.total}x ({percentageTotal}%)</Text>
                 </View>
-                <View style={styles.progressBarBg}>
+                <View style={[styles.progressBarBg, { width: `${(stats.total / maxTriggerCount) * 100}%` }]}>
                   <View 
                     style={[
                       styles.progressBarFill, 
@@ -98,6 +107,7 @@ export default function PatternsScreen() {
                     ]} 
                   />
                 </View>
+
               </View>
             );
           })
