@@ -10,17 +10,24 @@ export const unstable_settings = {
   anchor: '(tabs)',
 };
 
+import { useTheme } from '@/hooks/useTheme';
+
+function ThemeAwareStatusBar() {
+  const t = useTheme();
+  return <StatusBar style={t.isDark ? 'light' : 'dark'} />;
+}
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <StoreProvider>
+        <ThemeAwareStatusBar />
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         </Stack>
       </StoreProvider>
-      <StatusBar style="auto" />
     </ThemeProvider>
   );
 }
