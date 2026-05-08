@@ -55,6 +55,7 @@ export default function LogScreen() {
 
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const dotPulseAnim = useRef(new Animated.Value(1)).current;
   const flatListRef = useRef<any>(null);
   const insets = useSafeAreaInsets();
   const t = useTheme();
@@ -70,6 +71,21 @@ export default function LogScreen() {
         Animated.timing(pulseAnim, {
           toValue: 1,
           duration: 800,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(dotPulseAnim, {
+          toValue: 1.4,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(dotPulseAnim, {
+          toValue: 1,
+          duration: 1000,
           useNativeDriver: true,
         }),
       ])
@@ -255,7 +271,7 @@ export default function LogScreen() {
             <View style={[styles.designCard, { backgroundColor: t.bgCard }]}>
               <View style={styles.designCardContent}>
                 <View style={[styles.designCardIconWrap, { backgroundColor: t.accentBg }]}>
-                  <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: t.accent }} />
+                  <Animated.View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: t.accent, transform: [{ scale: dotPulseAnim }] }} />
                 </View>
                 <View style={styles.designCardTextWrap}>
                   <Text style={[styles.designCardTitle, { color: t.text }]}>Intervention</Text>

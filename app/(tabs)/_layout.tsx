@@ -3,7 +3,7 @@ import { useStore } from '@/store/useStore';
 import { Tabs } from 'expo-router';
 import { BarChart3, Settings, Settings2, ShieldAlert } from 'lucide-react-native';
 import { useEffect } from 'react';
-import { Platform } from 'react-native';
+import { Platform, View, Text } from 'react-native';
 
 export default function TabLayout() {
   const t = useTheme();
@@ -21,50 +21,102 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: tintColor,
-        tabBarInactiveTintColor: t.isDark ? '#3A5070' : '#B0C4D8',
         headerShown: false,
+        tabBarShowLabel: false,
         tabBarStyle: {
-          backgroundColor: t.tabBar,
-          borderTopWidth: 1,
-          borderTopColor: t.border,
-          height: 62,
-          paddingBottom: 8,
-          paddingTop: 6,
+          backgroundColor: '#121A26',
+          borderTopWidth: 0,
+          height: 70,
+          paddingBottom: 12,
+          paddingTop: 12,
         },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-          letterSpacing: 0.2,
+        tabBarIconStyle: {
+          flex: 1,
+          width: '100%',
+          height: '100%',
+        },
+        tabBarItemStyle: {
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
         },
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          tabBarLabel: 'Log',
-          tabBarIcon: ({ color, size }) => <ShieldAlert size={size} color={color} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: focused ? t.accent : 'transparent',
+              paddingHorizontal: focused ? 14 : 0,
+              paddingVertical: focused ? 8 : 0,
+              borderRadius: 14,
+            }}>
+              <ShieldAlert size={22} color={focused ? '#FFF' : '#6B7A8D'} />
+              {focused && <Text numberOfLines={1} style={{ color: '#FFF', fontWeight: '600', fontSize: 13, marginLeft: 6, flexShrink: 0 }}>Log</Text>}
+            </View>
+          ),
           ...hiddenDuringOnboarding,
         }}
       />
       <Tabs.Screen
         name="patterns"
         options={{
-          tabBarLabel: 'Muster',
-          tabBarIcon: ({ color, size }) => <BarChart3 size={size} color={color} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: focused ? t.accent : 'transparent',
+              paddingHorizontal: focused ? 14 : 0,
+              paddingVertical: focused ? 8 : 0,
+              borderRadius: 14,
+            }}>
+              <BarChart3 size={22} color={focused ? '#FFF' : '#6B7A8D'} />
+              {focused && <Text numberOfLines={1} style={{ color: '#FFF', fontWeight: '600', fontSize: 13, marginLeft: 6, flexShrink: 0 }}>Muster</Text>}
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
         name="replacements"
         options={{
-          tabBarLabel: 'Strategien',
-          tabBarIcon: ({ color, size }) => <Settings2 size={size} color={color} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: focused ? t.accent : 'transparent',
+              paddingHorizontal: focused ? 14 : 0,
+              paddingVertical: focused ? 8 : 0,
+              borderRadius: 14,
+            }}>
+              <Settings2 size={22} color={focused ? '#FFF' : '#6B7A8D'} />
+              {focused && <Text numberOfLines={1} style={{ color: '#FFF', fontWeight: '600', fontSize: 12, marginLeft: 6, flexShrink: 0 }}>Strategien</Text>}
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           tabBarLabel: 'Settings',
-          tabBarIcon: ({ color, size }) => <Settings size={size} color={color} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: focused ? t.accent : 'transparent',
+              paddingHorizontal: focused ? 14 : 0,
+              paddingVertical: focused ? 8 : 0,
+              borderRadius: 14,
+            }}>
+              <Settings size={22} color={focused ? '#FFF' : '#6B7A8D'} />
+              {focused && <Text numberOfLines={1} style={{ color: '#FFF', fontWeight: '600', fontSize: 13, marginLeft: 6, flexShrink: 0 }}>Settings</Text>}
+            </View>
+          ),
         }}
       />
     </Tabs>

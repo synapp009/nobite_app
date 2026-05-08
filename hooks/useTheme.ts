@@ -35,7 +35,7 @@ const light: Theme = {
   accent: '#5BAFD6',
   accentBg: '#D6EBF7',
   accentMuted: '#EAF4FB',
-  tabBar: '#FFFFFF',
+  tabBar: '#121A26',
   header: '#FFFFFF',
   isDark: false,
 };
