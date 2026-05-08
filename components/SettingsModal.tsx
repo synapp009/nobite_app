@@ -21,25 +21,18 @@ interface SettingsModalProps {
 
 export function SettingsModal({ visible, onClose }: SettingsModalProps) {
   const { darkMode, useSystemTheme, setDarkMode, setUseSystemTheme, resetStore } = useStore();
+  const [showResetConfirm, setShowResetConfirm] = React.useState(false);
   const t = useTheme();
   const insets = useSafeAreaInsets();
 
   const handleReset = () => {
-    Alert.alert(
-      'Therapie zurücksetzen',
-      'Bist du sicher? Alle deine Daten (Logs, Strategien, Fortschritt) werden unwiderruflich gelöscht und die Therapie startet von vorne.',
-      [
-        { text: 'Abbrechen', style: 'cancel' },
-        {
-          text: 'Zurücksetzen',
-          style: 'destructive',
-          onPress: async () => {
-            await resetStore();
-            onClose();
-          },
-        },
-      ]
-    );
+    setShowResetConfirm(true);
+  };
+
+  const confirmReset = async () => {
+    await resetStore();
+    setShowResetConfirm(false);
+    onClose();
   };
 
   return (
@@ -115,6 +108,35 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
 
           <Text style={[styles.version, { color: t.textMuted }]}>NoBite v1.0.0</Text>
         </ScrollView>
+        {/* Custom Reset Confirmation Overlay */}
+        {showResetConfirm && (
+          <View style={[StyleSheet.absoluteFill, styles.overlay, { backgroundColor: t.isDark ? 'rgba(17,20,24,0.98)' : 'rgba(245,247,250,0.98)' }]}>
+            <View style={[styles.confirmCard, { backgroundColor: t.bgCard }]}>
+              <View style={[styles.warningIconWrap, { backgroundColor: '#ff767522' }]}>
+                <RefreshCw size={32} color="#ff7675" />
+              </View>
+              <Text style={[styles.confirmTitle, { color: t.text }]}>Wirklich zurücksetzen?</Text>
+              <Text style={[styles.confirmText, { color: t.textSub }]}>
+                Alle deine Logs, Fortschritte und Einstellungen werden unwiderruflich gelöscht. Möchtest du wirklich von vorne beginnen?
+              </Text>
+
+              <View style={styles.confirmButtons}>
+                <TouchableOpacity
+                  style={[styles.actionButton, { backgroundColor: t.bgSubtle, flex: 1 }]}
+                  onPress={() => setShowResetConfirm(false)}
+                >
+                  <Text style={[styles.actionButtonText, { color: t.text }]}>Abbrechen</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.actionButton, { backgroundColor: '#ff7675', flex: 1 }]}
+                  onPress={confirmReset}
+                >
+                  <Text style={styles.actionButtonText}>Ja, zurücksetzen</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
       </View>
     </Modal>
   );
@@ -198,5 +220,61 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 32,
     marginBottom: 16,
+  },
+  overlay: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    zIndex: 100,
+  },
+  confirmCard: {
+    backgroundColor: 'white',
+    borderRadius: 24,
+    padding: 24,
+    width: '100%',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 5,
+  },
+  warningIconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  confirmTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  confirmText: {
+    fontSize: 15,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 16,
+  },
+  confirmButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  actionButton: {
+    flexDirection: 'row',
+    height: 56,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  actionButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: 'white',
   },
 });
