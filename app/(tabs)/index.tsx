@@ -98,19 +98,19 @@ export default function LogScreen() {
       title: "Willkommen bei NoBite",
       description: "Der erste Schritt in ein Leben ohne Nägelkauen beginnt heute. Wir begleiten dich mit wissenschaftlich fundierten Methoden.",
       icon: "",
-      color: "#a48fd8"
+      color: t.accentMuted
     },
     {
       title: "Phase 1: Beobachten",
       description: "In den ersten 7 Tagen lernst du deine Auslöser kennen. Tippe auf den Nagel, jedes Mal wenn du den Drang spürst.",
       icon: "",
-      color: "#00b894"
+      color: t.accent
     },
     {
       title: "Phase 2: Verändern",
       description: "Nach der Beobachtung helfen wir dir, das Kauen durch gesunde Ersatzhandlungen zu ersetzen. Gemeinsam schaffen wir das!",
       icon: "",
-      color: "#e17055"
+      color: "#F4A7A7"
     }
   ];
 
@@ -247,7 +247,7 @@ export default function LogScreen() {
           ) : (
             <View style={[styles.timerBadge, styles.activePhaseBadge, { backgroundColor: t.bgCard }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#8fd8a4', shadowColor: '#8fd8a4', shadowOpacity: 0.8, shadowRadius: 4, shadowOffset: { width: 0, height: 0 } }} />
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: t.accent, shadowColor: t.accent, shadowOpacity: 0.8, shadowRadius: 4, shadowOffset: { width: 0, height: 0 } }} />
                 <Text style={[styles.timerText, { color: t.text }]}>
                   <Text style={{ fontWeight: '800', color: t.text }}>Intervention aktiv</Text>
                 </Text>
@@ -282,14 +282,15 @@ export default function LogScreen() {
             <View style={styles.batchItem}>
               <Text style={[styles.batchTriggerLabel, { color: t.textSub }]}>Wenn ich <Text style={{ fontWeight: 'bold', color: t.text }}>{currentBatchTrigger}</Text> fühle...</Text>
               <TextInput
-                style={styles.customInput}
+                style={[styles.customInput, { backgroundColor: t.bgInput, color: t.text }]}
                 placeholder="Meine Ersatzhandlung..."
+                placeholderTextColor={t.textMuted}
                 value={batchInput}
                 onChangeText={setBatchInput}
                 autoFocus
               />
               <TouchableOpacity
-                style={[styles.actionButton, styles.actionButtonSuccess, { marginTop: 15 }]}
+                style={[styles.actionButton, { backgroundColor: t.accent, marginTop: 15 }]}
                 onPress={handleSaveBatchItem}
               >
                 <Text style={styles.actionButtonText}>Speichern & Weiter</Text>
@@ -303,11 +304,11 @@ export default function LogScreen() {
 
         <View style={[styles.content, { padding: 20, backgroundColor: t.bg }]}>
           <Text style={[styles.interventionTitle, { color: t.textSub }]}>Statt Nägelkauen ({intervention.trigger}):</Text>
-          <Text style={styles.interventionAction}>{intervention.action}</Text>
+          <Text style={[styles.interventionAction, { color: t.accent }]}>{intervention.action}</Text>
 
           <View style={styles.interventionActions}>
             <Pressable
-              style={[styles.actionButton, styles.actionButtonSuccess, { flex: 1 }]}
+              style={[styles.actionButton, { backgroundColor: t.accent, flex: 1 }]}
               onPress={handleInterventionDone}
             >
               <Check color="white" size={24} />
@@ -315,7 +316,7 @@ export default function LogScreen() {
             </Pressable>
 
             <Pressable
-              style={[styles.actionButton, styles.actionButtonError, { flex: 1 }]}
+              style={[styles.actionButton, { backgroundColor: '#F4A7A7', flex: 1 }]}
               onPress={handleInterventionIgnored}
             >
               <X color="white" size={24} />
@@ -355,7 +356,7 @@ export default function LogScreen() {
               />
 
               <TouchableOpacity
-                style={[styles.actionButton, styles.actionButtonSuccess, { marginTop: 15 }]}
+                style={[styles.actionButton, { backgroundColor: t.accent, marginTop: 15 }]}
                 onPress={() => {
                   if (batchInput.trim()) {
                     handleSaveForcedReplacement(batchInput.trim());
@@ -426,7 +427,7 @@ export default function LogScreen() {
 
                 <View style={{ flexDirection: 'row', gap: 10, marginTop: 15 }}>
                   <Pressable
-                    style={({ pressed }) => [styles.actionButton, styles.actionButtonSuccess, { flex: 1 }, pressed && { opacity: 0.8 }]}
+                    style={({ pressed }) => [styles.actionButton, { backgroundColor: t.accent, flex: 1 }, pressed && { opacity: 0.8 }]}
                     onPress={() => {
                       if (customTriggerText.trim()) {
                         handleTriggerSelect(customTriggerText.trim());
@@ -609,7 +610,7 @@ export default function LogScreen() {
       {showSuccess && (
         <View style={styles.content}>
           <Animated.View style={{ transform: [{ scale: scaleAnim }], alignItems: 'center' }}>
-            <View style={{ backgroundColor: '#8fd8a4', padding: 30, borderRadius: 100, marginBottom: 20 }}>
+            <View style={{ backgroundColor: t.accent, padding: 30, borderRadius: 100, marginBottom: 20 }}>
               <Check color="white" size={60} />
             </View>
             <Text style={{ fontSize: 28, fontWeight: 'bold', color: t.text }}>Gespeichert!</Text>
@@ -738,7 +739,7 @@ export default function LogScreen() {
           </View>
 
           <TouchableOpacity
-            style={[styles.actionButton, styles.actionButtonSuccess, { width: screenWidth - 80, height: 60 }]}
+            style={[styles.actionButton, { backgroundColor: t.accent, width: screenWidth - 80, height: 60 }]}
             onPress={() => {
               if (onboardingIndex < slides.length - 1) {
                 flatListRef.current?.scrollToIndex({ index: onboardingIndex + 1, animated: true });
@@ -947,15 +948,15 @@ const styles = StyleSheet.create({
   },
   batchCard: {
     backgroundColor: 'white',
-    borderRadius: 30,
+    borderRadius: 24,
     padding: 30,
     width: '100%',
     maxWidth: 400,
-    shadowColor: '#000',
+    shadowColor: '#5BAFD6',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 20,
-    elevation: 10,
+    elevation: 5,
   },
   batchSubtitle: {
     fontSize: 16,
@@ -1023,7 +1024,6 @@ const styles = StyleSheet.create({
   interventionAction: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#8fd8a4',
     marginBottom: 40,
     textAlign: 'center',
   },
@@ -1040,19 +1040,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  actionButtonSuccess: {
-    backgroundColor: '#8fd8a4',
-  },
-  actionButtonError: {
-    backgroundColor: '#eb3b5a',
-  },
   actionButtonText: {
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
   },
   customInput: {
-    backgroundColor: '#f1f2f6',
+    backgroundColor: '#EBF2FA',
     padding: 18,
     borderRadius: 15,
     fontSize: 18,

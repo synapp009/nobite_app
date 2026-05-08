@@ -59,12 +59,12 @@ export default function PatternsScreen() {
       </View>
 
       <View style={styles.statsGrid}>
-        <View style={[styles.statCard, { backgroundColor: t.bgCard }]}>
-          <Text style={styles.statValue}>{totalEvents}</Text>
+        <View style={[styles.statCard, { backgroundColor: t.accentBg, borderColor: t.accent + '40' }]}>
+          <Text style={[styles.statValue, { color: t.accent }]}>{totalEvents}</Text>
           <Text style={[styles.statLabel, { color: t.textSub }]}>Erfasst gesamt</Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: t.bgCard }]}>
-          <Text style={styles.statValue}>{replacedPercentage}%</Text>
+        <View style={[styles.statCard, { backgroundColor: t.bgCard, borderColor: t.border }]}>
+          <Text style={[styles.statValue, { color: t.accent }]}>{replacedPercentage}%</Text>
           <Text style={[styles.statLabel, { color: t.textSub }]}>Ersetzt</Text>
         </View>
       </View>
@@ -88,8 +88,8 @@ export default function PatternsScreen() {
                   styles.progressBarBg,
                   { backgroundColor: t.bgSubtle, width: `${(Math.log(stats.total + 1) / Math.log(maxTriggerCount + 1)) * 100}%` }
                 ]}>
-                  <View style={[styles.progressBarFill, { width: `${percentageReplaced}%`, backgroundColor: '#8fd8a4' }]} />
-                  <View style={[styles.progressBarFill, { width: `${percentageNotReplaced}%`, backgroundColor: '#fab1a0' }]} />
+                  <View style={[styles.progressBarFill, { width: `${percentageReplaced}%`, backgroundColor: t.accent }]} />
+                  <View style={[styles.progressBarFill, { width: `${percentageNotReplaced}%`, backgroundColor: '#F4A7A7' }]} />
                 </View>
               </View>
             );
@@ -123,8 +123,8 @@ export default function PatternsScreen() {
                 ]}>
                   {day.total > 0 ? (
                     <>
-                      <View style={{ height: `${(day.notReplaced / day.total) * 100}%`, backgroundColor: '#fab1a0' }} />
-                      <View style={{ height: `${(day.replaced / day.total) * 100}%`, backgroundColor: '#8fd8a4' }} />
+                      <View style={{ height: `${(day.notReplaced / day.total) * 100}%`, backgroundColor: '#F4A7A7' }} />
+                      <View style={{ height: `${(day.replaced / day.total) * 100}%`, backgroundColor: t.accent }} />
                     </>
                   ) : null}
                 </View>
@@ -136,11 +136,11 @@ export default function PatternsScreen() {
         </View>
         <View style={styles.legend}>
           <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: '#8fd8a4' }]} />
+            <View style={[styles.legendDot, { backgroundColor: t.accent }]} />
             <Text style={[styles.legendText, { color: t.textSub }]}>Ersetzt</Text>
           </View>
           <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: '#fab1a0' }]} />
+            <View style={[styles.legendDot, { backgroundColor: '#F4A7A7' }]} />
             <Text style={[styles.legendText, { color: t.textSub }]}>Ignoriert / Kaue</Text>
           </View>
         </View>
@@ -157,16 +157,17 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 16 },
   statsGrid: { flexDirection: 'row', gap: 15, marginBottom: 30 },
   statCard: {
-    flex: 1, padding: 20, borderRadius: 15, alignItems: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05, shadowRadius: 5, elevation: 2,
+    flex: 1, padding: 20, borderRadius: 18, alignItems: 'center',
+    borderWidth: 1,
+    shadowColor: '#5BAFD6', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08, shadowRadius: 12, elevation: 3,
   },
-  statValue: { fontSize: 32, fontWeight: 'bold', color: '#8fd8a4', marginBottom: 5 },
+  statValue: { fontSize: 32, fontWeight: '800', marginBottom: 5 },
   statLabel: { fontSize: 14 },
   section: {
-    padding: 20, borderRadius: 15,
+    padding: 20, borderRadius: 18,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05, shadowRadius: 5, elevation: 2,
+    shadowOpacity: 0.04, shadowRadius: 10, elevation: 2,
   },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 20 },
   emptyText: { fontStyle: 'italic', textAlign: 'center', padding: 20 },

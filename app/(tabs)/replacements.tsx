@@ -62,7 +62,7 @@ export default function ReplacementsScreen() {
                     autoFocus
                     onSubmitEditing={() => handleSave(trigger)}
                   />
-                  <TouchableOpacity style={styles.saveButton} onPress={() => handleSave(trigger)}>
+                  <TouchableOpacity style={[styles.saveButton, { backgroundColor: t.accent }]} onPress={() => handleSave(trigger)}>
                     <Check color="white" size={20} />
                   </TouchableOpacity>
                 </View>
@@ -76,7 +76,7 @@ export default function ReplacementsScreen() {
                 >
                   <Text style={[styles.arrow, { color: t.textMuted }]}>→</Text>
                   {currentReplacement ? (
-                    <Text style={styles.actionText}>{currentReplacement.action}</Text>
+                    <Text style={[styles.actionText, { color: t.accent }]}>{currentReplacement.action}</Text>
                   ) : (
                     <View style={styles.emptyAction}>
                       <Plus color={t.textMuted} size={20} />
@@ -100,18 +100,18 @@ const styles = StyleSheet.create({
   title: { fontSize: 28, fontWeight: 'bold', marginBottom: 8 },
   subtitle: { fontSize: 16, lineHeight: 22 },
   card: {
-    borderRadius: 15, padding: 20, marginBottom: 15,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05, shadowRadius: 5, elevation: 2,
+    borderRadius: 18, padding: 20, marginBottom: 15,
+    shadowColor: '#5BAFD6', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.07, shadowRadius: 12, elevation: 3,
   },
   triggerText: { fontSize: 16, marginBottom: 15 },
   triggerHighlight: { fontWeight: 'bold' },
-  actionContainer: { flexDirection: 'row', alignItems: 'center', padding: 15, borderRadius: 10 },
+  actionContainer: { flexDirection: 'row', alignItems: 'center', padding: 15, borderRadius: 12 },
   arrow: { fontSize: 18, marginRight: 10 },
-  actionText: { fontSize: 16, color: '#8fd8a4', fontWeight: '600', flex: 1 },
+  actionText: { fontSize: 16, fontWeight: '600', flex: 1 },
   emptyAction: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
   emptyActionText: { fontSize: 16 },
   inputContainer: { flexDirection: 'row', alignItems: 'center' },
-  input: { flex: 1, padding: 15, borderRadius: 10, fontSize: 16 },
-  saveButton: { backgroundColor: '#8fd8a4', padding: 15, borderRadius: 10, marginLeft: 10, justifyContent: 'center', alignItems: 'center' },
+  input: { flex: 1, padding: 15, borderRadius: 12, fontSize: 16 },
+  saveButton: { padding: 15, borderRadius: 12, marginLeft: 10, justifyContent: 'center', alignItems: 'center' },
 });

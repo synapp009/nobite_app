@@ -7,7 +7,7 @@ import { Platform } from 'react-native';
 
 export default function TabLayout() {
   const t = useTheme();
-  const tintColor = '#8fd8a4';
+  const tintColor = t.accent;
   const { initFirstLaunch, hasCompletedOnboarding } = useStore();
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: tintColor,
-        tabBarInactiveTintColor: t.isDark ? '#4a5568' : '#c4cdd4',
+        tabBarInactiveTintColor: t.isDark ? '#3A5070' : '#B0C4D8',
         headerShown: false,
         tabBarStyle: {
           backgroundColor: t.tabBar,
@@ -31,13 +31,13 @@ export default function TabLayout() {
             ios: {
               shadowColor: '#000',
               shadowOffset: { width: 0, height: -2 },
-              shadowOpacity: t.isDark ? 0.4 : 0.05,
-              shadowRadius: 12,
+              shadowOpacity: t.isDark ? 0.4 : 0.07,
+              shadowRadius: 16,
             },
-            android: { elevation: 8 },
+            android: { elevation: 10 },
             default: {},
           }),
-          height: 60,
+          height: 62,
           paddingBottom: 8,
           paddingTop: 6,
         },

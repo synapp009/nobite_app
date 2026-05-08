@@ -13,6 +13,10 @@ export interface Theme {
   textMuted: string;
   // Borders
   border: string;
+  // Accent (sky blue)
+  accent: string;
+  accentBg: string;
+  accentMuted: string;
   // Special
   tabBar: string;
   header: string;
@@ -20,30 +24,36 @@ export interface Theme {
 }
 
 const light: Theme = {
-  bg: '#f0f4f8',
-  bgCard: '#ffffff',
-  bgSubtle: '#f7f8fa',
-  bgInput: '#f0f4f8',
-  text: '#2d3436',
-  textSub: '#636e72',
-  textMuted: '#a4b0be',
-  border: '#e8ecf0',
-  tabBar: '#ffffff',
-  header: '#ffffff',
+  bg: '#F0F5FB',
+  bgCard: '#FFFFFF',
+  bgSubtle: '#EBF2FA',
+  bgInput: '#EBF2FA',
+  text: '#1A2533',
+  textSub: '#6B7A8D',
+  textMuted: '#A8B4C0',
+  border: '#DDE6F0',
+  accent: '#5BAFD6',
+  accentBg: '#D6EBF7',
+  accentMuted: '#EAF4FB',
+  tabBar: '#FFFFFF',
+  header: '#FFFFFF',
   isDark: false,
 };
 
 const dark: Theme = {
-  bg: '#111418',
-  bgCard: '#1e2228',
-  bgSubtle: '#252b33',
-  bgInput: '#2a3040',
-  text: '#f0f4f8',
-  textSub: '#94a3b8',
-  textMuted: '#64748b',
-  border: '#2d3748',
-  tabBar: '#161b22',
-  header: '#161b22',
+  bg: '#0F1923',
+  bgCard: '#18253A',
+  bgSubtle: '#1E2F45',
+  bgInput: '#243650',
+  text: '#E8F0F9',
+  textSub: '#7E95B0',
+  textMuted: '#4A6070',
+  border: '#243650',
+  accent: '#5BAFD6',
+  accentBg: '#1A3A52',
+  accentMuted: '#152D40',
+  tabBar: '#121E2E',
+  header: '#121E2E',
   isDark: true,
 };
 
