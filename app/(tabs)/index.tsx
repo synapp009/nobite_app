@@ -1,6 +1,6 @@
 import { useTheme } from '@/hooks/useTheme';
 import { Trigger, useStore } from '@/store/useStore';
-import { Check, Plus, X } from 'lucide-react-native';
+import { Check, Plus, X, Calendar, ChevronRight } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, FlatList, Keyboard, Platform, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -239,18 +239,29 @@ export default function LogScreen() {
       {!intervention && !showTriggers && !pendingReplacement && !showBatchSetup && !showSuccess && (
         <View style={styles.statusContainer}>
           {isObservationPhase ? (
-            <View style={[styles.timerBadge, { backgroundColor: t.bgCard }]}>
-              <Text style={[styles.timerText, { color: t.text }]}>
-                Noch <Text style={{ fontWeight: '800', color: '#6c5ce7' }}>{daysRemaining} Tage</Text> Beobachtung
-              </Text>
+            <View style={[styles.designCard, { backgroundColor: t.accent }]}>
+              <View style={styles.designCardContent}>
+                <View style={styles.designCardIconWrap}>
+                  <Calendar size={24} color={t.accent} />
+                </View>
+                <View style={styles.designCardTextWrap}>
+                  <Text style={styles.designCardTitle}>Noch {daysRemaining} {daysRemaining === 1 ? 'Tag' : 'Tage'}</Text>
+                  <Text style={styles.designCardSubtitle}>Beobachtungsphase</Text>
+                </View>
+                <ChevronRight size={24} color="rgba(255,255,255,0.7)" />
+              </View>
             </View>
           ) : (
-            <View style={[styles.timerBadge, styles.activePhaseBadge, { backgroundColor: t.bgCard }]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: t.accent, shadowColor: t.accent, shadowOpacity: 0.8, shadowRadius: 4, shadowOffset: { width: 0, height: 0 } }} />
-                <Text style={[styles.timerText, { color: t.text }]}>
-                  <Text style={{ fontWeight: '800', color: t.text }}>Intervention aktiv</Text>
-                </Text>
+            <View style={[styles.designCard, { backgroundColor: t.bgCard }]}>
+              <View style={styles.designCardContent}>
+                <View style={[styles.designCardIconWrap, { backgroundColor: t.accentBg }]}>
+                  <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: t.accent, shadowColor: t.accent, shadowOpacity: 0.8, shadowRadius: 4, shadowOffset: { width: 0, height: 0 } }} />
+                </View>
+                <View style={styles.designCardTextWrap}>
+                  <Text style={[styles.designCardTitle, { color: t.text }]}>Intervention</Text>
+                  <Text style={[styles.designCardSubtitle, { color: t.accent }]}>Phase aktiv</Text>
+                </View>
+                <ChevronRight size={24} color={t.border} />
               </View>
             </View>
           )}
@@ -907,6 +918,44 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.02)',
   },
+  designCard: {
+    width: '90%',
+    maxWidth: 380,
+    borderRadius: 24,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  designCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  designCardIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  designCardTextWrap: {
+    flex: 1,
+  },
+  designCardTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: 'white',
+    marginBottom: 4,
+  },
+  designCardSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.85)',
+    fontWeight: '500',
+  },
   activePhaseBadge: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderWidth: 1,
@@ -952,7 +1001,7 @@ const styles = StyleSheet.create({
     padding: 30,
     width: '100%',
     maxWidth: 400,
-    shadowColor: '#5BAFD6',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.08,
     shadowRadius: 20,

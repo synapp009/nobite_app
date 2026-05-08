@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 16, lineHeight: 22 },
   card: {
     borderRadius: 18, padding: 20, marginBottom: 15,
-    shadowColor: '#5BAFD6', shadowOffset: { width: 0, height: 4 },
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.07, shadowRadius: 12, elevation: 3,
   },
   triggerText: { fontSize: 16, marginBottom: 15 },

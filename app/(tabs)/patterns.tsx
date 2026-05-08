@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1, padding: 20, borderRadius: 18, alignItems: 'center',
     borderWidth: 1,
-    shadowColor: '#5BAFD6', shadowOffset: { width: 0, height: 4 },
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08, shadowRadius: 12, elevation: 3,
   },
   statValue: { fontSize: 32, fontWeight: '800', marginBottom: 5 },
