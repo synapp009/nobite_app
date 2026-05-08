@@ -162,7 +162,6 @@ const styles = StyleSheet.create({
   },
   card: {
     borderRadius: 16,
-    borderWidth: 1,
     overflow: 'hidden',
   },
   row: {
@@ -214,11 +213,6 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 5,
   },
   warningIconWrap: {
     width: 64,

@@ -255,7 +255,7 @@ export default function LogScreen() {
             <View style={[styles.designCard, { backgroundColor: t.bgCard }]}>
               <View style={styles.designCardContent}>
                 <View style={[styles.designCardIconWrap, { backgroundColor: t.accentBg }]}>
-                  <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: t.accent, shadowColor: t.accent, shadowOpacity: 0.8, shadowRadius: 4, shadowOffset: { width: 0, height: 0 } }} />
+                  <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: t.accent }} />
                 </View>
                 <View style={styles.designCardTextWrap}>
                   <Text style={[styles.designCardTitle, { color: t.text }]}>Intervention</Text>
@@ -677,11 +677,6 @@ export default function LogScreen() {
                     alignItems: 'center',
                     paddingTop: 15,
                     position: 'relative',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 5 },
-                    shadowOpacity: 0.15,
-                    shadowRadius: 8,
-                    elevation: 8,
                   }}>
                     {/* Finger crease */}
                     <View style={{ position: 'absolute', bottom: 50, width: 90, height: 1, backgroundColor: 'rgba(0,0,0,0.1)', zIndex: 3 }} />
@@ -704,11 +699,6 @@ export default function LogScreen() {
                     alignItems: 'center',
                     paddingTop: 15,
                     position: 'relative',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 5 },
-                    shadowOpacity: 0.15,
-                    shadowRadius: 8,
-                    elevation: 8,
                   }}>
                     {/* Finger crease */}
                     <View style={{ position: 'absolute', bottom: 50, width: 90, height: 1, backgroundColor: 'rgba(0,0,0,0.1)', zIndex: 3 }} />
@@ -827,11 +817,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 90,
     overflow: 'hidden',
     position: 'relative',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
   },
   nailBody: {
     position: 'absolute',
@@ -908,11 +893,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 40,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 5,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
@@ -923,11 +903,6 @@ const styles = StyleSheet.create({
     maxWidth: 380,
     borderRadius: 24,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 8,
   },
   designCardContent: {
     flexDirection: 'row',
@@ -1001,11 +976,6 @@ const styles = StyleSheet.create({
     padding: 30,
     width: '100%',
     maxWidth: 400,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 5,
   },
   batchSubtitle: {
     fontSize: 16,

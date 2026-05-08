@@ -158,16 +158,11 @@ const styles = StyleSheet.create({
   statsGrid: { flexDirection: 'row', gap: 15, marginBottom: 30 },
   statCard: {
     flex: 1, padding: 20, borderRadius: 18, alignItems: 'center',
-    borderWidth: 1,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08, shadowRadius: 12, elevation: 3,
   },
   statValue: { fontSize: 32, fontWeight: '800', marginBottom: 5 },
   statLabel: { fontSize: 14 },
   section: {
     padding: 20, borderRadius: 18,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04, shadowRadius: 10, elevation: 2,
   },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 20 },
   emptyText: { fontStyle: 'italic', textAlign: 'center', padding: 20 },

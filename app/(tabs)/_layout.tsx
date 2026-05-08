@@ -26,17 +26,8 @@ export default function TabLayout() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: t.tabBar,
-          borderTopWidth: 0,
-          ...Platform.select({
-            ios: {
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: -2 },
-              shadowOpacity: t.isDark ? 0.4 : 0.07,
-              shadowRadius: 16,
-            },
-            android: { elevation: 10 },
-            default: {},
-          }),
+          borderTopWidth: 1,
+          borderTopColor: t.border,
           height: 62,
           paddingBottom: 8,
           paddingTop: 6,

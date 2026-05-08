@@ -24,10 +24,10 @@ export interface Theme {
 }
 
 const light: Theme = {
-  bg: '#F0F5FB',
-  bgCard: '#FFFFFF',
-  bgSubtle: '#EBF2FA',
-  bgInput: '#EBF2FA',
+  bg: '#FFFFFF',
+  bgCard: '#F4F5F7',
+  bgSubtle: '#F4F5F7',
+  bgInput: '#F4F5F7',
   text: '#1A2533',
   textSub: '#6B7A8D',
   textMuted: '#A8B4C0',
