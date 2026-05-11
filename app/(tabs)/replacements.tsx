@@ -29,8 +29,8 @@ export default function ReplacementsScreen() {
   return (
     <KeyboardAvoidingView
       style={[styles.container, { backgroundColor: t.bg }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={90}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: Math.max(insets.top, 20) + 10 }]}>
         <View style={styles.header}>
@@ -68,19 +68,19 @@ export default function ReplacementsScreen() {
                 </View>
               ) : (
                 <TouchableOpacity
-                  style={[styles.actionContainer, { backgroundColor: t.bgSubtle }]}
+                  style={[styles.actionContainer, { backgroundColor: t.bgInput }]}
                   onPress={() => {
                     setEditingTrigger(trigger);
                     setInputValue(currentReplacement?.action || '');
                   }}
                 >
-                  <Text style={[styles.arrow, { color: t.textMuted }]}>→</Text>
+                  <Text style={[styles.arrow, { color: currentReplacement ? t.textMuted : t.textSub }]}>→</Text>
                   {currentReplacement ? (
                     <Text style={[styles.actionText, { color: t.accent }]}>{currentReplacement.action}</Text>
                   ) : (
                     <View style={styles.emptyAction}>
-                      <Plus color={t.textMuted} size={20} />
-                      <Text style={[styles.emptyActionText, { color: t.textMuted }]}>Hinzufügen</Text>
+                      <Plus color={t.textSub} size={20} />
+                      <Text style={[styles.emptyActionText, { color: t.textSub, fontWeight: '500' }]}>Hinzufügen</Text>
                     </View>
                   )}
                 </TouchableOpacity>

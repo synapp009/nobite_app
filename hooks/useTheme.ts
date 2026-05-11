@@ -25,9 +25,9 @@ export interface Theme {
 
 const light: Theme = {
   bg: '#FFFFFF',
-  bgCard: '#F4F5F7',
-  bgSubtle: '#F4F5F7',
-  bgInput: '#F4F5F7',
+  bgCard: '#F6F7F9',
+  bgSubtle: '#EAECEF',
+  bgInput: '#E2EAF2',
   text: '#1A2533',
   textSub: '#6B7A8D',
   textMuted: '#A8B4C0',
